@@ -1,27 +1,53 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  // 자동 주입되는 환경변수 확인
-  const envKeys = Object.keys(process.env)
-    .filter(
-      (k) =>
-        k.startsWith("APPHUB") ||
-        k.startsWith("DATABASE") ||
-        k.startsWith("DB_") ||
-        k.startsWith("PG") ||
-        k.startsWith("POSTGRES") ||
-        k.startsWith("APP_") ||
-        k.startsWith("API_") ||
-        k.startsWith("INTERNAL") ||
-        k.startsWith("SERVICE") ||
-        k.startsWith("GW_") ||
-        k.startsWith("GATEWAY")
-    )
-    .map((k) => ({
-      key: k,
-      // 값의 처음 10자만 보여주고 마스킹
-      preview: (process.env[k] || "").substring(0, 10) + "...",
-    }));
+  const keys = [
+    "APPHUB_API_KEY",
+    "APPHUB_API_URL",
+    "APPHUB_APP_ID",
+    "APPHUB_APP_SLUG",
+    "APPHUB_DATA_BASE_URL",
+  ];
 
-  return NextResponse.json({ envKeys, total: envKeys.length });
+  const vars = keys.map((k) => ({
+    key: k,
+    value: process.env[k] || "(not set)",
+  }));
+
+  // APPHUB_DATA_BASE_URL로 employees 데이터 가져오기 테스트
+  const dataBaseUrl = process.env.APPHUB_DATA_BASE_URL || "";
+  const apiKey = process.env.APPHUB_API_KEY || "";
+
+  let testResult = null;
+  if (dataBaseUrl && apiKey) {
+    try {
+      // 테이블 목록이나 직원 데이터 가져오기 시도
+      const testUrls = [
+        `${dataBaseUrl}/employees`,
+        `${dataBaseUrl}/tables/employees`,
+        `${dataBaseUrl}/data/employees`,
+      ];
+
+      for (const url of testUrls) {
+        try {
+          const res = await fetch(url, {
+            headers: {
+              "X-Api-Key": apiKey,
+              "X-App-Key": apiKey,
+              "Content-Type": "application/json",
+            },
+          });
+          const text = await res.text();
+          testResult = { url, status: res.status, body: text.substring(0, 500) };
+          if (res.ok) break;
+        } catch (e) {
+          testResult = { url, error: String(e) };
+        }
+      }
+    } catch (e) {
+      testResult = { error: String(e) };
+    }
+  }
+
+  return NextResponse.json({ vars, testResult });
 }

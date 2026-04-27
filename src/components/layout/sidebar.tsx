@@ -48,15 +48,6 @@ const navGroups = [
   },
 ];
 
-const avatarColors = [
-  "avatar-blue",
-  "avatar-purple",
-  "avatar-green",
-  "avatar-amber",
-  "avatar-rose",
-  "avatar-cyan",
-];
-
 export function Sidebar() {
   const pathname = usePathname();
 

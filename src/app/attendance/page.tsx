@@ -5,8 +5,6 @@ import {
 } from "@/lib/api";
 import { Employee, Department, AttendanceRecord } from "@/lib/types";
 import { AttendanceDashboard } from "@/components/attendance/attendance-dashboard";
-import { Clock } from "lucide-react";
-
 export default async function AttendancePage() {
   const [attendanceData, employeesData, departmentsData] = await Promise.all([
     getAttendanceRecords().catch(() => ({ rows: [] })),

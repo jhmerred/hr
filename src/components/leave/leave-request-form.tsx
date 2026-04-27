@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Employee, LeaveType, LeaveBalance } from "@/lib/types";
 import { Holiday, calcBusinessDays, isHolidaySync, isWeekend } from "@/lib/holidays";
 import { createLeaveRequestAction } from "@/app/actions";
@@ -44,9 +44,8 @@ export function LeaveRequestForm({
   const [error, setError] = useState("");
 
   // 캘린더 상태
-  const now = new Date();
-  const [calYear, setCalYear] = useState(now.getFullYear());
-  const [calMonth, setCalMonth] = useState(now.getMonth());
+  const [calYear, setCalYear] = useState(() => new Date().getFullYear());
+  const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
   const [selectingEnd, setSelectingEnd] = useState(false);
 
   const days = useMemo(() => {
@@ -54,7 +53,8 @@ export function LeaveRequestForm({
     return calcBusinessDays(startDate, endDate, holidays);
   }, [startDate, endDate, halfDay, holidays]);
 
-  const currentYear = now.getFullYear();
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const currentYear = new Date().getFullYear();
   const remaining = useMemo(() => {
     if (!employeeId || !leaveTypeId) return null;
     const b = balances.find(
@@ -127,7 +127,7 @@ export function LeaveRequestForm({
       });
     }
 
-    const todayStr = now.toISOString().split("T")[0];
+    const todayDate = new Date().toISOString().split("T")[0];
 
     // 이번 달
     for (let d = 1; d <= last.getDate(); d++) {
@@ -141,7 +141,7 @@ export function LeaveRequestForm({
         inMonth: true,
         isWeekend: date.getDay() === 0 || date.getDay() === 6,
         holiday: holidayMap.get(ds),
-        isToday: ds === todayStr,
+        isToday: ds === todayDate,
         isStart: ds === startDate,
         isEnd: ds === endDate,
         inRange: !!inRange,
@@ -167,7 +167,7 @@ export function LeaveRequestForm({
     }
 
     return result;
-  }, [calYear, calMonth, holidays, startDate, endDate, now]);
+  }, [calYear, calMonth, holidays, startDate, endDate]);
 
   const goMonth = (delta: number) => {
     let m = calMonth + delta;
@@ -178,30 +178,27 @@ export function LeaveRequestForm({
     setCalYear(y);
   };
 
-  const handleDateClick = useCallback(
-    (date: string) => {
-      if (halfDay) {
-        setStartDate(date);
-        setEndDate(date);
-        return;
-      }
+  function handleDateClick(date: string) {
+    if (halfDay) {
+      setStartDate(date);
+      setEndDate(date);
+      return;
+    }
 
-      if (!selectingEnd || !startDate) {
+    if (!selectingEnd || !startDate) {
+      setStartDate(date);
+      setEndDate("");
+      setSelectingEnd(true);
+    } else {
+      if (date < startDate) {
         setStartDate(date);
-        setEndDate("");
-        setSelectingEnd(true);
+        setEndDate(startDate);
       } else {
-        if (date < startDate) {
-          setStartDate(date);
-          setEndDate(startDate);
-        } else {
-          setEndDate(date);
-        }
-        setSelectingEnd(false);
+        setEndDate(date);
       }
-    },
-    [selectingEnd, startDate, halfDay]
-  );
+      setSelectingEnd(false);
+    }
+  }
 
   const handleSubmit = async () => {
     setError("");
@@ -216,7 +213,7 @@ export function LeaveRequestForm({
       formData.set("reason", reason);
       await createLeaveRequestAction(formData);
       router.push("/leave");
-    } catch (e) {
+    } catch {
       setError("휴가 신청에 실패했습니다. 다시 시도해 주세요.");
       setSubmitting(false);
     }
@@ -395,7 +392,7 @@ export function LeaveRequestForm({
             {calendarDays.map((d, i) => {
               const isOff = d.isWeekend || !!d.holiday;
               const isSelected = d.isStart || d.isEnd;
-              const isPast = d.date < now.toISOString().split("T")[0];
+              const isPast = d.date < todayStr;
 
               return (
                 <button

@@ -1,7 +1,7 @@
 import { getEmployees, getDepartments } from "@/lib/api";
 import { Employee, Department } from "@/lib/types";
 import { EmployeeTable } from "@/components/employees/employee-table";
-import { Plus, Users } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function EmployeesPage() {

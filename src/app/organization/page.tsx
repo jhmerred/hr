@@ -40,12 +40,6 @@ export default async function OrganizationPage() {
       }),
   }));
 
-  const statusBadge: Record<string, { label: string; cls: string }> = {
-    active: { label: "재직", cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-    inactive: { label: "퇴직", cls: "text-gray-500 bg-gray-50 border-gray-200" },
-    on_leave: { label: "휴직", cls: "text-amber-700 bg-amber-50 border-amber-200" },
-  };
-
   return (
     <div className="space-y-7">
       <div>
@@ -105,8 +99,7 @@ export default async function OrganizationPage() {
                   구성원이 없습니다
                 </p>
               ) : (
-                dept.members.map((emp, idx) => {
-                  const badge = statusBadge[emp.status] || statusBadge.active;
+                dept.members.map((emp) => {
                   const isLeader = emp.position === "팀장";
                   return (
                     <Link

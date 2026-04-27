@@ -1,18 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Holiday, getMonthCalendar, CalendarDay } from "@/lib/holidays";
+import { Holiday, getMonthCalendar } from "@/lib/holidays";
 import { LeaveRequest, Employee, LeaveType } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-const avatarColors = [
-  "avatar-blue", "avatar-purple", "avatar-green", "avatar-amber", "avatar-rose", "avatar-cyan",
-];
-function getAvatarColor(name: string) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return avatarColors[Math.abs(hash) % avatarColors.length];
-}
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -132,7 +123,6 @@ export function CalendarView({
           <div className="grid grid-cols-7 gap-px bg-gray-100 rounded-xl overflow-hidden">
             {days.map((d, i) => {
               const dayLeaves = leaveByDate.get(d.date) || [];
-              const isOff = d.isWeekend || d.holiday;
               return (
                 <div
                   key={i}

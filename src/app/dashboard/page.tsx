@@ -5,16 +5,13 @@ import {
   getAttendanceRecords,
   getLeaveBalances,
 } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
 import {
   Users,
   CalendarDays,
   Clock,
   TrendingUp,
-  AlertCircle,
   ArrowRight,
   CheckCircle2,
-  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 

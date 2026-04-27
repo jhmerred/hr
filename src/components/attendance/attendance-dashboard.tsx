@@ -42,8 +42,8 @@ export function AttendanceDashboard({
   const [deptFilter, setDeptFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
 
-  const empMap = new Map(employees.map((e) => [e.id, e]));
-  const deptMap = new Map(departments.map((d) => [d.id, d.name]));
+  const empMap = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
+  const deptMap = useMemo(() => new Map(departments.map((d) => [d.id, d.name])), [departments]);
 
   const filtered = useMemo(() => {
     return records.filter((r) => {

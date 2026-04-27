@@ -1,53 +1,38 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const keys = [
-    "APPHUB_API_KEY",
-    "APPHUB_API_URL",
-    "APPHUB_APP_ID",
-    "APPHUB_APP_SLUG",
-    "APPHUB_DATA_BASE_URL",
-  ];
-
-  const vars = keys.map((k) => ({
-    key: k,
-    value: process.env[k] || "(not set)",
-  }));
-
-  // APPHUB_DATA_BASE_URL로 employees 데이터 가져오기 테스트
   const dataBaseUrl = process.env.APPHUB_DATA_BASE_URL || "";
   const apiKey = process.env.APPHUB_API_KEY || "";
+  const apiUrl = process.env.APPHUB_API_URL || "";
+  const slug = process.env.APPHUB_APP_SLUG || "";
 
-  let testResult = null;
-  if (dataBaseUrl && apiKey) {
+  // 다양한 URL 패턴을 시도해서 어떤 것이 작동하는지 확인
+  const patterns = [
+    { name: "DATA_BASE_URL/employees", url: `${dataBaseUrl}/employees` },
+    { name: "DATA_BASE_URL/{slug}/employees", url: `${dataBaseUrl}/${slug}/employees` },
+    { name: "API_URL/gw/{slug}/employees", url: `${apiUrl}/gw/${slug}/employees` },
+    { name: "API_URL/gw/{slug}/data/employees", url: `${apiUrl}/gw/${slug}/data/employees` },
+    { name: "API_URL/gw/{slug}/data/public-data/employees", url: `${apiUrl}/gw/${slug}/data/public-data/employees` },
+    { name: "API_URL/internal/data/{slug}/employees", url: `${apiUrl}/internal/data/${slug}/employees` },
+    { name: "API_URL/apps/85/data/employees", url: `${apiUrl}/apps/85/data/employees` },
+    { name: "DATA_BASE_URL (raw)", url: dataBaseUrl },
+  ];
+
+  const results = [];
+  for (const p of patterns) {
     try {
-      // 테이블 목록이나 직원 데이터 가져오기 시도
-      const testUrls = [
-        `${dataBaseUrl}/employees`,
-        `${dataBaseUrl}/tables/employees`,
-        `${dataBaseUrl}/data/employees`,
-      ];
-
-      for (const url of testUrls) {
-        try {
-          const res = await fetch(url, {
-            headers: {
-              "X-Api-Key": apiKey,
-              "X-App-Key": apiKey,
-              "Content-Type": "application/json",
-            },
-          });
-          const text = await res.text();
-          testResult = { url, status: res.status, body: text.substring(0, 500) };
-          if (res.ok) break;
-        } catch (e) {
-          testResult = { url, error: String(e) };
-        }
-      }
+      const res = await fetch(p.url, {
+        headers: { "X-Api-Key": apiKey, "X-App-Key": apiKey, "Content-Type": "application/json" },
+      });
+      const text = await res.text();
+      results.push({ name: p.name, url: p.url, status: res.status, body: text.substring(0, 300) });
     } catch (e) {
-      testResult = { error: String(e) };
+      results.push({ name: p.name, url: p.url, error: String(e) });
     }
   }
 
-  return NextResponse.json({ vars, testResult });
+  return NextResponse.json({
+    env: { dataBaseUrl, apiUrl, slug, apiKeyPrefix: apiKey.substring(0, 15) },
+    results,
+  });
 }

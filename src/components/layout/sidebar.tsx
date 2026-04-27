@@ -12,6 +12,7 @@ import {
   Clock,
   Network,
   ChevronRight,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +40,7 @@ const navGroups = [
   {
     label: "휴가",
     items: [
+      { href: "/calendar", label: "캘린더", icon: Calendar },
       { href: "/leave", label: "휴가 관리", icon: CalendarDays },
       { href: "/leave-types", label: "휴가 유형", icon: ListChecks },
       { href: "/balances", label: "잔여 휴가", icon: Palmtree },

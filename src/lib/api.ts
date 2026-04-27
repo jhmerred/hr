@@ -1,110 +1,170 @@
-// apphub 자동 주입 환경변수 사용
-// APPHUB_API_URL, APPHUB_API_KEY, APPHUB_APP_SLUG는 배포 시 자동 주입됨
-// APP_KEY, API_URL은 수동 설정한 fallback
-const API_BASE =
-  process.env.APPHUB_DATA_BASE_URL ||
-  process.env.APPHUB_API_URL ||
-  process.env.API_URL ||
-  "https://hub-api.jocodingax.ai";
-const APP_KEY =
-  process.env.APPHUB_API_KEY ||
-  process.env.APP_KEY ||
-  "";
-const APP_SLUG =
-  process.env.APPHUB_APP_SLUG || "hr";
+// apphub 자동 주입: APPHUB_API_URL, APPHUB_API_KEY, APPHUB_APP_SLUG
+const MCP_URL = (process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai") + "/mcp";
+const API_KEY = process.env.APPHUB_API_KEY || process.env.APP_KEY || "";
+const APP_SLUG = process.env.APPHUB_APP_SLUG || "hr";
 
-async function gw(
-  table: string,
-  options: {
-    method?: string;
-    id?: string;
-    body?: Record<string, unknown>;
-    params?: Record<string, string>;
-  } = {}
-) {
-  const { method = "GET", id, body, params } = options;
+let requestId = 0;
 
-  // 다양한 경로 시도: APPHUB_DATA_BASE_URL이면 직접 사용, 아니면 /gw/{slug}/ 형식
-  const basePath = process.env.APPHUB_DATA_BASE_URL
-    ? `${API_BASE}/${table}${id ? `/${id}` : ""}`
-    : `${API_BASE}/gw/${APP_SLUG}/${table}${id ? `/${id}` : ""}`;
-
-  const url = new URL(basePath);
-  if (params) {
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  }
-
-  const res = await fetch(url.toString(), {
-    method,
+async function mcpCall(method: string, params: Record<string, unknown>) {
+  requestId++;
+  const res = await fetch(MCP_URL, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Api-Key": APP_KEY,
-      "X-App-Key": APP_KEY,
+      "Authorization": `Bearer ${API_KEY}`,
+      "X-Api-Key": API_KEY,
+      "X-App-Key": API_KEY,
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      method,
+      params,
+      id: requestId,
+    }),
     cache: "no-store",
   });
 
   if (!res.ok) {
     const text = await res.text();
-    console.error(`API error ${res.status} ${method} ${url}: ${text}`);
-    throw new Error(`API error ${res.status}: ${text}`);
+    console.error(`MCP error ${res.status}: ${text}`);
+    throw new Error(`MCP error ${res.status}: ${text}`);
   }
 
-  return res.json();
+  const json = await res.json();
+  if (json.error) {
+    console.error(`MCP RPC error: ${JSON.stringify(json.error)}`);
+    throw new Error(`MCP error: ${json.error.message}`);
+  }
+
+  return json.result;
 }
 
+// MCP tools/call wrapper
+async function callTool(tool: string, args: Record<string, unknown>) {
+  const result = await mcpCall("tools/call", {
+    name: tool,
+    arguments: { app_slug: APP_SLUG, ...args },
+  });
+
+  // MCP tool result is { content: [{ type: "text", text: "..." }] }
+  if (result?.content?.[0]?.text) {
+    return JSON.parse(result.content[0].text);
+  }
+  return result;
+}
+
+// Records API via MCP
+async function queryRecords(
+  tableName: string,
+  filters?: Record<string, unknown>,
+  sort?: string,
+  page?: number,
+  per?: number
+) {
+  const args: Record<string, unknown> = {
+    table_name: tableName,
+    action: "query",
+  };
+  if (filters) args.filters = filters;
+  if (sort) args.sort = sort;
+  if (page) args.page = page;
+  if (per) args.per = per;
+
+  return callTool("records", args);
+}
+
+async function getRecord(tableName: string, id: string) {
+  return callTool("records", {
+    table_name: tableName,
+    action: "query",
+    id,
+  });
+}
+
+async function insertRecord(tableName: string, data: Record<string, unknown>) {
+  return callTool("records", {
+    table_name: tableName,
+    action: "insert",
+    data,
+  });
+}
+
+async function updateRecord(
+  tableName: string,
+  id: string,
+  data: Record<string, unknown>
+) {
+  return callTool("records", {
+    table_name: tableName,
+    action: "update",
+    id,
+    data,
+  });
+}
+
+async function deleteRecord(tableName: string, id: string) {
+  return callTool("records", {
+    table_name: tableName,
+    action: "delete",
+    id,
+  });
+}
+
+// === Public API ===
+
 // Departments
-export const getDepartments = () => gw("departments");
-export const getDepartment = (id: string) => gw("departments", { id });
+export const getDepartments = () => queryRecords("departments");
+export const getDepartment = (id: string) => getRecord("departments", id);
 export const createDepartment = (data: Record<string, unknown>) =>
-  gw("departments", { method: "POST", body: data });
+  insertRecord("departments", data);
 export const updateDepartment = (id: string, data: Record<string, unknown>) =>
-  gw("departments", { method: "PATCH", id, body: data });
+  updateRecord("departments", id, data);
 export const deleteDepartment = (id: string) =>
-  gw("departments", { method: "DELETE", id });
+  deleteRecord("departments", id);
 
 // Employees
 export const getEmployees = (params?: Record<string, string>) =>
-  gw("employees", { params });
-export const getEmployee = (id: string) => gw("employees", { id });
+  queryRecords("employees", params ? params : undefined);
+export const getEmployee = (id: string) => getRecord("employees", id);
 export const createEmployee = (data: Record<string, unknown>) =>
-  gw("employees", { method: "POST", body: data });
+  insertRecord("employees", data);
 export const updateEmployee = (id: string, data: Record<string, unknown>) =>
-  gw("employees", { method: "PATCH", id, body: data });
-export const deleteEmployee = (id: string) =>
-  gw("employees", { method: "DELETE", id });
+  updateRecord("employees", id, data);
+export const deleteEmployee = (id: string) => deleteRecord("employees", id);
 
 // Leave Types
-export const getLeaveTypes = () => gw("leave_types");
+export const getLeaveTypes = () => queryRecords("leave_types");
 export const createLeaveType = (data: Record<string, unknown>) =>
-  gw("leave_types", { method: "POST", body: data });
+  insertRecord("leave_types", data);
 export const updateLeaveType = (id: string, data: Record<string, unknown>) =>
-  gw("leave_types", { method: "PATCH", id, body: data });
+  updateRecord("leave_types", id, data);
 export const deleteLeaveType = (id: string) =>
-  gw("leave_types", { method: "DELETE", id });
+  deleteRecord("leave_types", id);
 
 // Leave Balances
 export const getLeaveBalances = (params?: Record<string, string>) =>
-  gw("leave_balances", { params });
+  queryRecords("leave_balances", params ? params : undefined);
 export const createLeaveBalance = (data: Record<string, unknown>) =>
-  gw("leave_balances", { method: "POST", body: data });
+  insertRecord("leave_balances", data);
 export const updateLeaveBalance = (id: string, data: Record<string, unknown>) =>
-  gw("leave_balances", { method: "PATCH", id, body: data });
+  updateRecord("leave_balances", id, data);
 
 // Leave Requests
 export const getLeaveRequests = (params?: Record<string, string>) =>
-  gw("leave_requests", { params });
-export const getLeaveRequest = (id: string) => gw("leave_requests", { id });
+  queryRecords("leave_requests", params ? params : undefined);
+export const getLeaveRequest = (id: string) =>
+  getRecord("leave_requests", id);
 export const createLeaveRequest = (data: Record<string, unknown>) =>
-  gw("leave_requests", { method: "POST", body: data });
+  insertRecord("leave_requests", data);
 export const updateLeaveRequest = (id: string, data: Record<string, unknown>) =>
-  gw("leave_requests", { method: "PATCH", id, body: data });
+  updateRecord("leave_requests", id, data);
 
 // Attendance Records
 export const getAttendanceRecords = (params?: Record<string, string>) =>
-  gw("attendance_records", { params });
+  queryRecords("attendance_records", params ? params : undefined);
 export const createAttendanceRecord = (data: Record<string, unknown>) =>
-  gw("attendance_records", { method: "POST", body: data });
-export const updateAttendanceRecord = (id: string, data: Record<string, unknown>) =>
-  gw("attendance_records", { method: "PATCH", id, body: data });
+  insertRecord("attendance_records", data);
+export const updateAttendanceRecord = (
+  id: string,
+  data: Record<string, unknown>
+) => updateRecord("attendance_records", id, data);

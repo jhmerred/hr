@@ -1,5 +1,5 @@
-const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
-const APP_KEY = process.env.APPHUB_APP_KEY || "";
+const API_BASE = process.env.API_URL || "https://hub-api.jocodingax.ai";
+const APP_KEY = process.env.APP_KEY || "";
 const APP_SLUG = "hr";
 
 async function gw(

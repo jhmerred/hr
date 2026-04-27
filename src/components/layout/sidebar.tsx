@@ -11,12 +11,13 @@ import {
   Palmtree,
   Clock,
   Network,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navGroups = [
   {
-    label: "홈",
+    label: null,
     items: [
       { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
     ],
@@ -38,32 +39,50 @@ const navGroups = [
   {
     label: "휴가",
     items: [
-      { href: "/leave", label: "휴가 신청", icon: CalendarDays },
+      { href: "/leave", label: "휴가 관리", icon: CalendarDays },
       { href: "/leave-types", label: "휴가 유형", icon: ListChecks },
       { href: "/balances", label: "잔여 휴가", icon: Palmtree },
     ],
   },
 ];
 
+const avatarColors = [
+  "avatar-blue",
+  "avatar-purple",
+  "avatar-green",
+  "avatar-amber",
+  "avatar-rose",
+  "avatar-cyan",
+];
+
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-60 border-r bg-white flex flex-col z-40">
-      <div className="h-14 flex items-center px-5 border-b">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
+    <aside className="fixed left-0 top-0 h-full w-[240px] bg-white border-r border-gray-100 flex flex-col z-40">
+      {/* Logo */}
+      <div className="h-[60px] flex items-center px-5 border-b border-gray-100">
+        <Link href="/dashboard" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200 group-hover:shadow-lg group-hover:shadow-blue-300 transition-shadow">
             <span className="text-white font-bold text-sm">H</span>
           </div>
-          <span className="text-lg font-bold tracking-tight">HR Manager</span>
+          <div>
+            <span className="text-[15px] font-bold tracking-tight text-gray-900">
+              HR Manager
+            </span>
+          </div>
         </Link>
       </div>
-      <nav className="flex-1 overflow-y-auto py-3 px-3">
-        {navGroups.map((group) => (
-          <div key={group.label} className="mb-4">
-            <p className="px-3 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-              {group.label}
-            </p>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4 px-3">
+        {navGroups.map((group, gi) => (
+          <div key={gi} className={cn("mb-1", group.label && "mt-5")}>
+            {group.label && (
+              <p className="px-3 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.08em]">
+                {group.label}
+              </p>
+            )}
             {group.items.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -73,27 +92,47 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors",
+                    "group flex items-center gap-2.5 px-3 py-[9px] rounded-xl text-[13px] font-medium transition-all duration-200",
                     isActive
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm"
+                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
                   )}
                 >
                   <item.icon
                     className={cn(
-                      "h-4 w-4",
-                      isActive ? "text-blue-600" : "text-gray-400"
+                      "h-[18px] w-[18px] transition-colors",
+                      isActive
+                        ? "text-blue-600"
+                        : "text-gray-400 group-hover:text-gray-600"
                     )}
+                    strokeWidth={isActive ? 2.2 : 1.8}
                   />
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {isActive && (
+                    <ChevronRight className="h-3.5 w-3.5 text-blue-400" />
+                  )}
                 </Link>
               );
             })}
           </div>
         ))}
       </nav>
-      <div className="px-5 py-3 border-t">
-        <p className="text-[11px] text-gray-400">HR Manager v2.0</p>
+
+      {/* Footer */}
+      <div className="px-4 py-3 border-t border-gray-100">
+        <div className="flex items-center gap-2.5 px-1">
+          <div className="w-7 h-7 rounded-full avatar-purple flex items-center justify-center text-[11px] font-bold">
+            A
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[12px] font-semibold text-gray-700 truncate">
+              Admin
+            </p>
+            <p className="text-[10px] text-gray-400 truncate">
+              HR Manager v2.0
+            </p>
+          </div>
+        </div>
       </div>
     </aside>
   );

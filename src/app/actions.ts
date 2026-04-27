@@ -139,6 +139,23 @@ export async function rejectLeaveRequestAction(id: string, formData: FormData) {
   revalidatePath("/dashboard");
 }
 
+// 근속 기반 연차 일수 계산 (한국 근로기준법)
+function calcAnnualLeave(hireDate: string, year: number): number {
+  const hire = new Date(hireDate);
+  const yearStart = new Date(year, 0, 1);
+  const months = (yearStart.getFullYear() - hire.getFullYear()) * 12 + (yearStart.getMonth() - hire.getMonth());
+
+  if (months < 12) {
+    // 1년 미만: 매월 1일씩 최대 11일
+    return Math.min(Math.max(months, 0), 11);
+  }
+
+  // 1년 이상: 15일 + 2년마다 1일 추가 (최대 25일)
+  const yearsWorked = Math.floor(months / 12);
+  const bonus = Math.floor(Math.max(yearsWorked - 1, 0) / 2);
+  return Math.min(15 + bonus, 25);
+}
+
 // Leave Balances
 export async function initializeBalancesAction(year: number) {
   const [employeesData, leaveTypesData] = await Promise.all([
@@ -149,16 +166,28 @@ export async function initializeBalancesAction(year: number) {
   const employees = employeesData.rows || [];
   const leaveTypes = leaveTypesData.rows || [];
 
+  // 연차 타입 찾기
+  const annualType = leaveTypes.find(
+    (lt: { name: string }) => lt.name === "연차"
+  );
+
   for (const emp of employees) {
     for (const lt of leaveTypes) {
       if (!lt.is_active) continue;
+
+      // 연차는 근속 기반으로 계산
+      let days = lt.default_days;
+      if (annualType && lt.id === annualType.id && emp.hire_date) {
+        days = calcAnnualLeave(emp.hire_date, year);
+      }
+
       await api.createLeaveBalance({
         employee_id: emp.id,
         leave_type_id: lt.id,
         year,
-        total_days: lt.default_days,
+        total_days: days,
         used_days: 0,
-        remaining_days: lt.default_days,
+        remaining_days: days,
       });
     }
   }

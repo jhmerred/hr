@@ -16,8 +16,10 @@ export default async function BalancesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">잔여 휴가</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+          잔여 휴가
+        </h1>
+        <p className="text-[13px] text-gray-400 mt-1">
           직원별 잔여 휴가 현황을 확인합니다
         </p>
       </div>

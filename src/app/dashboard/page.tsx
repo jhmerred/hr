@@ -3,25 +3,50 @@ import {
   getLeaveRequests,
   getDepartments,
   getAttendanceRecords,
+  getLeaveBalances,
 } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, CalendarDays, Clock, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  Users,
+  CalendarDays,
+  Clock,
+  TrendingUp,
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 
+const avatarColors = [
+  "avatar-blue",
+  "avatar-purple",
+  "avatar-green",
+  "avatar-amber",
+  "avatar-rose",
+  "avatar-cyan",
+];
+function getAvatarColor(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return avatarColors[Math.abs(hash) % avatarColors.length];
+}
+
 export default async function DashboardPage() {
-  const [employeesData, requestsData, departmentsData, attendanceData] =
+  const [employeesData, requestsData, departmentsData, attendanceData, balancesData] =
     await Promise.all([
       getEmployees().catch(() => ({ rows: [] })),
       getLeaveRequests().catch(() => ({ rows: [] })),
       getDepartments().catch(() => ({ rows: [] })),
       getAttendanceRecords().catch(() => ({ rows: [] })),
+      getLeaveBalances().catch(() => ({ rows: [] })),
     ]);
 
   const employees = employeesData.rows || [];
   const requests = requestsData.rows || [];
   const departments = departmentsData.rows || [];
   const attendance = attendanceData.rows || [];
+  const balances = balancesData.rows || [];
 
   const activeEmployees = employees.filter(
     (e: { status: string }) => e.status === "active"
@@ -29,8 +54,10 @@ export default async function DashboardPage() {
   const pendingRequests = requests.filter(
     (r: { status: string }) => r.status === "pending"
   );
+  const approvedRequests = requests.filter(
+    (r: { status: string }) => r.status === "approved"
+  );
 
-  // 이번 주 근태 통계
   const thisWeekAttendance = attendance.filter((a: { date: string }) => {
     return a.date >= "2026-04-21" && a.date <= "2026-04-27";
   });
@@ -42,102 +69,162 @@ export default async function DashboardPage() {
     (a: { status: string }) => a.status === "late"
   ).length;
 
-  const deptMap = new Map(
-    departments.map((d: { id: string; name: string }) => [d.id, d.name])
+  // 연차 소진율 (평균)
+  const annualBalances = balances.filter(
+    (b: { year: number }) => b.year === 2026
   );
+  const avgUsageRate =
+    annualBalances.length > 0
+      ? Math.round(
+          (annualBalances.reduce(
+            (s: number, b: { used_days: number }) => s + b.used_days,
+            0
+          ) /
+            annualBalances.reduce(
+              (s: number, b: { total_days: number }) => s + b.total_days,
+              0
+            )) *
+            100
+        )
+      : 0;
 
-  // 부서별 인원 수
   const deptCounts = departments.map((d: { id: string; name: string }) => ({
     name: d.name,
     count: employees.filter(
       (e: { department_id: string }) => e.department_id === d.id
     ).length,
   }));
+  const maxDeptCount = Math.max(...deptCounts.map((d: { count: number }) => d.count), 1);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          오늘의 HR 현황을 한눈에 확인하세요
+        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+          대시보드
+        </h1>
+        <p className="text-[13px] text-gray-400 mt-1">
+          HR 현황을 한눈에 확인하세요. 오늘은{" "}
+          {new Date().toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            weekday: "long",
+          })}
+          입니다.
         </p>
       </div>
 
-      {/* 상단 통계 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">전체 직원</p>
-                <p className="text-2xl font-bold mt-1">{activeEmployees.length}<span className="text-sm font-normal text-gray-400">명</span></p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                <Users className="h-5 w-5 text-blue-600" />
-              </div>
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link href="/employees" className="stat-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 block">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                전체 직원
+              </p>
+              <p className="text-[28px] font-bold text-gray-900 mt-1 leading-none">
+                {activeEmployees.length}
+                <span className="text-[13px] font-normal text-gray-400 ml-0.5">명</span>
+              </p>
+              <p className="text-[11px] text-gray-400 mt-2">
+                {departments.length}개 부서
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200">
+              <Users className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </Link>
 
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">대기 중 휴가</p>
-                <p className="text-2xl font-bold mt-1">{pendingRequests.length}<span className="text-sm font-normal text-gray-400">건</span></p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
-                <CalendarDays className="h-5 w-5 text-amber-600" />
-              </div>
+        <Link href="/leave" className="stat-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 block">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                대기 중 휴가
+              </p>
+              <p className="text-[28px] font-bold text-gray-900 mt-1 leading-none">
+                {pendingRequests.length}
+                <span className="text-[13px] font-normal text-gray-400 ml-0.5">건</span>
+              </p>
+              <p className="text-[11px] text-gray-400 mt-2">
+                승인 {approvedRequests.length}건
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200">
+              <CalendarDays className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </Link>
 
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">이번 주 초과근무</p>
-                <p className="text-2xl font-bold mt-1">{Math.round(totalOvertimeMin / 60)}<span className="text-sm font-normal text-gray-400">시간</span></p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-red-500" />
-              </div>
+        <Link href="/attendance" className="stat-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 block">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                주간 초과근무
+              </p>
+              <p className="text-[28px] font-bold text-gray-900 mt-1 leading-none">
+                {Math.round(totalOvertimeMin / 60)}
+                <span className="text-[13px] font-normal text-gray-400 ml-0.5">시간</span>
+              </p>
+              <p className="text-[11px] text-red-400 mt-2">
+                {lateCount > 0 ? `지각 ${lateCount}건` : "지각 없음"}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg shadow-rose-200">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </Link>
 
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500">이번 주 지각</p>
-                <p className="text-2xl font-bold mt-1">{lateCount}<span className="text-sm font-normal text-gray-400">건</span></p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center">
-                <AlertCircle className="h-5 w-5 text-orange-500" />
-              </div>
+        <Link href="/balances" className="stat-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 block">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                연차 소진율
+              </p>
+              <p className="text-[28px] font-bold text-gray-900 mt-1 leading-none">
+                {avgUsageRate}
+                <span className="text-[13px] font-normal text-gray-400 ml-0.5">%</span>
+              </p>
+              <p className="text-[11px] text-gray-400 mt-2">
+                2026년 평균
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-200">
+              <Clock className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* 대기 중 휴가 */}
-        <Card className="lg:col-span-2 border-0 shadow-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">승인 대기 중인 휴가</CardTitle>
-              <Link href="/leave" className="text-xs text-blue-600 hover:underline">
-                전체 보기
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        {/* 대기 중 휴가 (3/5) */}
+        <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <h2 className="text-[14px] font-bold text-gray-900">
+              승인 대기 중
+              {pendingRequests.length > 0 && (
+                <span className="ml-2 text-[11px] font-semibold text-white bg-blue-500 rounded-full px-2 py-0.5">
+                  {pendingRequests.length}
+                </span>
+              )}
+            </h2>
+            <Link
+              href="/leave"
+              className="text-[12px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+            >
+              전체 보기 <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="px-5 pb-4">
             {pendingRequests.length === 0 ? (
-              <p className="text-sm text-gray-400 py-4 text-center">
-                대기 중인 신청이 없습니다
-              </p>
+              <div className="py-10 text-center">
+                <CheckCircle2 className="h-10 w-10 text-green-200 mx-auto" />
+                <p className="text-[13px] text-gray-400 mt-3">
+                  대기 중인 신청이 없습니다
+                </p>
+              </div>
             ) : (
               <div className="space-y-2">
                 {pendingRequests.slice(0, 5).map(
@@ -149,175 +236,192 @@ export default async function DashboardPage() {
                     days: number;
                     reason: string;
                   }) => {
-                    const empName =
-                      employees.find(
-                        (e: { id: string }) => e.id === req.employee_id
-                      )?.name || "-";
+                    const emp = employees.find(
+                      (e: { id: string }) => e.id === req.employee_id
+                    );
+                    const empName = emp?.name || "-";
                     return (
                       <Link
                         key={req.id}
                         href={`/leave/${req.id}`}
-                        className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700">
-                            {empName.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{empName}</p>
-                            <p className="text-xs text-gray-500">
-                              {req.start_date} ~ {req.end_date} ({req.days}일)
-                            </p>
-                          </div>
+                        <div
+                          className={`w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold ${getAvatarColor(empName)}`}
+                        >
+                          {empName.charAt(0)}
                         </div>
-                        <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[13px] font-semibold text-gray-800">
+                              {empName}
+                            </span>
+                            <span className="text-[11px] text-gray-400">
+                              {emp?.position}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-400 mt-0.5">
+                            {req.start_date} ~ {req.end_date} &middot; {req.days}일 &middot; {req.reason}
+                          </p>
+                        </div>
+                        <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1">
                           대기
-                        </Badge>
+                        </span>
                       </Link>
                     );
                   }
                 )}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* 부서별 인원 */}
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">부서별 인원</CardTitle>
-              <Link href="/organization" className="text-xs text-blue-600 hover:underline">
-                조직도
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {deptCounts.map(
-                (dept: { name: string; count: number }, i: number) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between py-2"
-                  >
-                    <span className="text-sm text-gray-700">{dept.name}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-blue-500 rounded-full"
-                          style={{
-                            width: `${Math.min(
-                              (dept.count / Math.max(...deptCounts.map((d: { count: number }) => d.count))) * 100,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500 w-6 text-right">
-                        {dept.count}
-                      </span>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 최근 근태 현황 */}
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold">이번 주 근태 현황</CardTitle>
-            <Link href="/attendance" className="text-xs text-blue-600 hover:underline">
-              전체 보기
+        {/* 부서별 인원 (2/5) */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <h2 className="text-[14px] font-bold text-gray-900">부서별 인원</h2>
+            <Link
+              href="/organization"
+              className="text-[12px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+            >
+              조직도 <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-gray-500 text-xs border-b">
-                  <th className="text-left py-2 font-medium">직원</th>
-                  <th className="text-left py-2 font-medium">날짜</th>
-                  <th className="text-left py-2 font-medium">출근</th>
-                  <th className="text-left py-2 font-medium">퇴근</th>
-                  <th className="text-left py-2 font-medium">근무</th>
-                  <th className="text-left py-2 font-medium">상태</th>
-                </tr>
-              </thead>
-              <tbody>
-                {thisWeekAttendance
-                  .sort(
-                    (a: { date: string }, b: { date: string }) =>
-                      b.date.localeCompare(a.date)
-                  )
-                  .slice(0, 8)
-                  .map(
-                    (a: {
-                      id: string;
-                      employee_id: string;
-                      date: string;
-                      clock_in: string;
-                      clock_out: string;
-                      work_minutes: number;
-                      status: string;
-                    }) => {
-                      const emp = employees.find(
-                        (e: { id: string }) => e.id === a.employee_id
-                      );
-                      const statusLabel: Record<string, string> = {
-                        normal: "정상",
-                        late: "지각",
-                        overtime: "초과근무",
-                        leave: "휴가",
-                        absent: "결근",
-                      };
-                      const statusColor: Record<string, string> = {
-                        normal: "text-green-600 bg-green-50",
-                        late: "text-orange-600 bg-orange-50",
-                        overtime: "text-red-600 bg-red-50",
-                        leave: "text-blue-600 bg-blue-50",
-                        absent: "text-gray-600 bg-gray-100",
-                      };
-                      return (
-                        <tr key={a.id} className="border-b last:border-0">
-                          <td className="py-2.5">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-semibold text-gray-600">
-                                {emp?.name?.charAt(0) || "?"}
-                              </div>
-                              <span className="font-medium">{emp?.name || "-"}</span>
-                            </div>
-                          </td>
-                          <td className="py-2.5 text-gray-500">{a.date}</td>
-                          <td className="py-2.5">{a.clock_in || "-"}</td>
-                          <td className="py-2.5">{a.clock_out || "-"}</td>
-                          <td className="py-2.5 text-gray-500">
-                            {a.work_minutes > 0
-                              ? `${Math.floor(a.work_minutes / 60)}h ${a.work_minutes % 60}m`
-                              : "-"}
-                          </td>
-                          <td className="py-2.5">
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                statusColor[a.status] || "text-gray-500 bg-gray-50"
-                              }`}
-                            >
-                              {statusLabel[a.status] || a.status}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    }
-                  )}
-              </tbody>
-            </table>
+          <div className="px-5 pb-5 space-y-3">
+            {deptCounts.map(
+              (dept: { name: string; count: number }, i: number) => (
+                <div key={i}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[12px] font-medium text-gray-600">
+                      {dept.name}
+                    </span>
+                    <span className="text-[12px] font-bold text-gray-900">
+                      {dept.count}명
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 transition-all duration-500"
+                      style={{
+                        width: `${(dept.count / maxDeptCount) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* 근태 현황 */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <h2 className="text-[14px] font-bold text-gray-900">
+            이번 주 근태
+          </h2>
+          <Link
+            href="/attendance"
+            className="text-[12px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+          >
+            전체 보기 <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <div className="px-5 pb-4 overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                <th className="text-left py-2.5 pr-4">직원</th>
+                <th className="text-left py-2.5 pr-4">날짜</th>
+                <th className="text-left py-2.5 pr-4">출근</th>
+                <th className="text-left py-2.5 pr-4">퇴근</th>
+                <th className="text-left py-2.5 pr-4">근무</th>
+                <th className="text-left py-2.5">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {thisWeekAttendance
+                .sort(
+                  (a: { date: string }, b: { date: string }) =>
+                    b.date.localeCompare(a.date)
+                )
+                .slice(0, 10)
+                .map(
+                  (a: {
+                    id: string;
+                    employee_id: string;
+                    date: string;
+                    clock_in: string;
+                    clock_out: string;
+                    work_minutes: number;
+                    overtime_minutes: number;
+                    status: string;
+                  }) => {
+                    const emp = employees.find(
+                      (e: { id: string }) => e.id === a.employee_id
+                    );
+                    const empName = emp?.name || "-";
+                    const statusMap: Record<
+                      string,
+                      { label: string; cls: string }
+                    > = {
+                      normal: { label: "정상", cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+                      late: { label: "지각", cls: "text-orange-700 bg-orange-50 border-orange-200" },
+                      overtime: { label: "초과", cls: "text-rose-700 bg-rose-50 border-rose-200" },
+                      leave: { label: "휴가", cls: "text-blue-700 bg-blue-50 border-blue-200" },
+                    };
+                    const st = statusMap[a.status] || statusMap.normal;
+                    return (
+                      <tr
+                        key={a.id}
+                        className="border-b border-gray-50 last:border-0 table-row-hover"
+                      >
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${getAvatarColor(empName)}`}
+                            >
+                              {empName.charAt(0)}
+                            </div>
+                            <span className="text-[13px] font-medium text-gray-800">
+                              {empName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 pr-4 text-[12px] text-gray-500">
+                          {a.date}
+                        </td>
+                        <td className="py-3 pr-4 text-[13px] font-mono text-gray-700">
+                          {a.clock_in || "-"}
+                        </td>
+                        <td className="py-3 pr-4 text-[13px] font-mono text-gray-700">
+                          {a.clock_out || "-"}
+                        </td>
+                        <td className="py-3 pr-4 text-[12px] text-gray-500">
+                          {a.work_minutes > 0
+                            ? `${Math.floor(a.work_minutes / 60)}h ${a.work_minutes % 60}m`
+                            : "-"}
+                          {a.overtime_minutes > 0 && (
+                            <span className="text-rose-500 ml-1 font-medium">
+                              (+{a.overtime_minutes}m)
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3">
+                          <span
+                            className={`text-[11px] px-2 py-[3px] rounded-md border font-semibold ${st.cls}`}
+                          >
+                            {st.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  }
+                )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

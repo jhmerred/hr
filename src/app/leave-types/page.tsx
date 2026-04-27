@@ -9,8 +9,10 @@ export default async function LeaveTypesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">휴가 유형</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+          휴가 유형
+        </h1>
+        <p className="text-[13px] text-gray-400 mt-1">
           휴가 유형을 추가하고 관리합니다
         </p>
       </div>

@@ -5,6 +5,7 @@ import {
 } from "@/lib/api";
 import { Employee, Department, AttendanceRecord } from "@/lib/types";
 import { AttendanceDashboard } from "@/components/attendance/attendance-dashboard";
+import { Clock } from "lucide-react";
 
 export default async function AttendancePage() {
   const [attendanceData, employeesData, departmentsData] = await Promise.all([
@@ -20,8 +21,10 @@ export default async function AttendancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">근태 현황</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+          근태 현황
+        </h1>
+        <p className="text-[13px] text-gray-400 mt-1">
           직원별 출퇴근 기록과 근무시간을 확인합니다
         </p>
       </div>

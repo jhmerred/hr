@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { calcBusinessDays, isHoliday, isWeekend } from "@/lib/holidays";
+import { Holiday, calcBusinessDays, isHolidaySync, isWeekend } from "@/lib/holidays";
 import { createLeaveRequestAction } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Calendar, Info } from "lucide-react";
@@ -15,10 +15,12 @@ export function LeaveRequestForm({
   employees,
   leaveTypes,
   balances,
+  holidays = [],
 }: {
   employees: Employee[];
   leaveTypes: LeaveType[];
   balances: LeaveBalance[];
+  holidays?: Holiday[];
 }) {
   const router = useRouter();
   const [employeeId, setEmployeeId] = useState("");
@@ -29,8 +31,8 @@ export function LeaveRequestForm({
 
   const days = useMemo(() => {
     if (halfDay) return 0.5;
-    return calcBusinessDays(startDate, endDate);
-  }, [startDate, endDate, halfDay]);
+    return calcBusinessDays(startDate, endDate, holidays);
+  }, [startDate, endDate, halfDay, holidays]);
 
   const currentYear = new Date().getFullYear();
   const remaining = useMemo(() => {
@@ -48,21 +50,21 @@ export function LeaveRequestForm({
 
   // 선택한 기간 내 제외되는 날 분석
   const excludedDays = useMemo(() => {
-    if (!startDate || !endDate || halfDay) return { weekends: 0, holidays: [] as string[] };
+    if (!startDate || !endDate || halfDay) return { weekends: 0, holidayNames: [] as string[] };
     const s = new Date(startDate);
     const e = new Date(endDate);
     let weekends = 0;
-    const holidays: string[] = [];
+    const holidayNames: string[] = [];
     const cur = new Date(s);
     while (cur <= e) {
       const dateStr = cur.toISOString().split("T")[0];
       if (isWeekend(dateStr)) weekends++;
-      const h = isHoliday(dateStr);
-      if (h && !isWeekend(dateStr)) holidays.push(h.name);
+      const h = isHolidaySync(dateStr, holidays);
+      if (h && !isWeekend(dateStr)) holidayNames.push(h.name);
       cur.setDate(cur.getDate() + 1);
     }
-    return { weekends, holidays };
-  }, [startDate, endDate, halfDay]);
+    return { weekends, holidayNames };
+  }, [startDate, endDate, halfDay, holidays]);
 
   const totalCalendarDays = useMemo(() => {
     if (!startDate || !endDate) return 0;
@@ -240,13 +242,13 @@ export function LeaveRequestForm({
                       <span className="text-blue-500">-{excludedDays.weekends}일</span>
                     </div>
                   )}
-                  {excludedDays.holidays.length > 0 && (
+                  {excludedDays.holidayNames.length > 0 && (
                     <div className="flex justify-between">
                       <span>
-                        공휴일 제외 ({excludedDays.holidays.join(", ")})
+                        공휴일 제외 ({excludedDays.holidayNames.join(", ")})
                       </span>
                       <span className="text-red-500">
-                        -{excludedDays.holidays.length}일
+                        -{excludedDays.holidayNames.length}일
                       </span>
                     </div>
                   )}

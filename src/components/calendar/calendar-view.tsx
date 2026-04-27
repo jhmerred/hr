@@ -34,7 +34,7 @@ export function CalendarView({
   const empMap = new Map(employees.map((e) => [e.id, e]));
   const ltMap = new Map(leaveTypes.map((lt) => [lt.id, lt.name]));
 
-  const days = useMemo(() => getMonthCalendar(year, month), [year, month]);
+  const days = useMemo(() => getMonthCalendar(year, month, holidays), [year, month, holidays]);
 
   // 각 날짜에 해당하는 휴가 신청
   const leaveByDate = useMemo(() => {

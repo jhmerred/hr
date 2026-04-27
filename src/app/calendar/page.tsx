@@ -5,20 +5,21 @@ import { CalendarView } from "@/components/calendar/calendar-view";
 import { Scale } from "lucide-react";
 
 export default async function CalendarPage() {
-  const [requestsData, employeesData, leaveTypesData] = await Promise.all([
-    getLeaveRequests().catch(() => ({ rows: [] })),
-    getEmployees().catch(() => ({ rows: [] })),
-    getLeaveTypes().catch(() => ({ rows: [] })),
-  ]);
+  const currentYear = new Date().getFullYear();
+
+  const [requestsData, employeesData, leaveTypesData, holidays] =
+    await Promise.all([
+      getLeaveRequests().catch(() => ({ rows: [] })),
+      getEmployees().catch(() => ({ rows: [] })),
+      getLeaveTypes().catch(() => ({ rows: [] })),
+      getHolidays(currentYear),
+    ]);
 
   const requests: LeaveRequest[] = (requestsData.rows || []).filter(
     (r: LeaveRequest) => r.status === "approved" || r.status === "pending"
   );
   const employees: Employee[] = employeesData.rows || [];
   const leaveTypes: LeaveType[] = leaveTypesData.rows || [];
-
-  const currentYear = new Date().getFullYear();
-  const holidays = getHolidays(currentYear);
 
   return (
     <div className="space-y-7">

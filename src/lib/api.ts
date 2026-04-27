@@ -1,6 +1,17 @@
-const API_BASE = process.env.API_URL || "https://hub-api.jocodingax.ai";
-const APP_KEY = process.env.APP_KEY || "";
-const APP_SLUG = "hr";
+// apphub 자동 주입 환경변수 사용
+// APPHUB_API_URL, APPHUB_API_KEY, APPHUB_APP_SLUG는 배포 시 자동 주입됨
+// APP_KEY, API_URL은 수동 설정한 fallback
+const API_BASE =
+  process.env.APPHUB_DATA_BASE_URL ||
+  process.env.APPHUB_API_URL ||
+  process.env.API_URL ||
+  "https://hub-api.jocodingax.ai";
+const APP_KEY =
+  process.env.APPHUB_API_KEY ||
+  process.env.APP_KEY ||
+  "";
+const APP_SLUG =
+  process.env.APPHUB_APP_SLUG || "hr";
 
 async function gw(
   table: string,
@@ -12,7 +23,13 @@ async function gw(
   } = {}
 ) {
   const { method = "GET", id, body, params } = options;
-  const url = new URL(`${API_BASE}/gw/${APP_SLUG}/${table}${id ? `/${id}` : ""}`);
+
+  // 다양한 경로 시도: APPHUB_DATA_BASE_URL이면 직접 사용, 아니면 /gw/{slug}/ 형식
+  const basePath = process.env.APPHUB_DATA_BASE_URL
+    ? `${API_BASE}/${table}${id ? `/${id}` : ""}`
+    : `${API_BASE}/gw/${APP_SLUG}/${table}${id ? `/${id}` : ""}`;
+
+  const url = new URL(basePath);
   if (params) {
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   }
@@ -21,6 +38,7 @@ async function gw(
     method,
     headers: {
       "Content-Type": "application/json",
+      "X-Api-Key": APP_KEY,
       "X-App-Key": APP_KEY,
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -29,6 +47,7 @@ async function gw(
 
   if (!res.ok) {
     const text = await res.text();
+    console.error(`API error ${res.status} ${method} ${url}: ${text}`);
     throw new Error(`API error ${res.status}: ${text}`);
   }
 

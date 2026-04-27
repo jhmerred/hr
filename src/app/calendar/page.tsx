@@ -7,13 +7,16 @@ import { Scale } from "lucide-react";
 export default async function CalendarPage() {
   const currentYear = new Date().getFullYear();
 
-  const [requestsData, employeesData, leaveTypesData, holidays] =
+  const [requestsData, employeesData, leaveTypesData, holidaysCurrent, holidaysNext, holidaysPrev] =
     await Promise.all([
       getLeaveRequests().catch(() => ({ rows: [] })),
       getEmployees().catch(() => ({ rows: [] })),
       getLeaveTypes().catch(() => ({ rows: [] })),
       getHolidays(currentYear),
+      getHolidays(currentYear + 1),
+      getHolidays(currentYear - 1),
     ]);
+  const holidays = [...holidaysPrev, ...holidaysCurrent, ...holidaysNext];
 
   const requests: LeaveRequest[] = (requestsData.rows || []).filter(
     (r: LeaveRequest) => r.status === "approved" || r.status === "pending"

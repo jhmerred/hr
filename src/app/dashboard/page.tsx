@@ -58,8 +58,19 @@ export default async function DashboardPage() {
     (r: { status: string }) => r.status === "approved"
   );
 
+  // 이번 주 월~일 범위 동적 계산
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + mondayOffset);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const weekStart = monday.toISOString().split("T")[0];
+  const weekEnd = sunday.toISOString().split("T")[0];
+
   const thisWeekAttendance = attendance.filter((a: { date: string }) => {
-    return a.date >= "2026-04-21" && a.date <= "2026-04-27";
+    return a.date >= weekStart && a.date <= weekEnd;
   });
   const totalOvertimeMin = thisWeekAttendance.reduce(
     (sum: number, a: { overtime_minutes: number }) => sum + (a.overtime_minutes || 0),
@@ -70,8 +81,9 @@ export default async function DashboardPage() {
   ).length;
 
   // 연차 소진율 (평균)
+  const currentYear = today.getFullYear();
   const annualBalances = balances.filter(
-    (b: { year: number }) => b.year === 2026
+    (b: { year: number }) => b.year === currentYear
   );
   const avgUsageRate =
     annualBalances.length > 0
@@ -188,7 +200,7 @@ export default async function DashboardPage() {
                 <span className="text-[13px] font-normal text-gray-400 ml-0.5">%</span>
               </p>
               <p className="text-[11px] text-gray-400 mt-2">
-                2026년 평균
+                {currentYear}년 평균
               </p>
             </div>
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-200">

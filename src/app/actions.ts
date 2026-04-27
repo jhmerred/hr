@@ -165,3 +165,45 @@ export async function initializeBalancesAction(year: number) {
 
   revalidatePath("/balances");
 }
+
+// Attendance
+export async function clockInAction(employeeId: string) {
+  const now = new Date();
+  const date = now.toISOString().split("T")[0];
+  const time = now.toTimeString().slice(0, 5);
+  const isLate = time > "09:00";
+
+  await api.createAttendanceRecord({
+    employee_id: employeeId,
+    date,
+    clock_in: time,
+    clock_out: "",
+    work_minutes: 0,
+    overtime_minutes: 0,
+    status: isLate ? "late" : "normal",
+    note: isLate ? "지각" : "",
+  });
+
+  revalidatePath("/attendance");
+  revalidatePath("/dashboard");
+}
+
+export async function clockOutAction(recordId: string, clockIn: string) {
+  const now = new Date();
+  const time = now.toTimeString().slice(0, 5);
+
+  const [inH, inM] = clockIn.split(":").map(Number);
+  const [outH, outM] = time.split(":").map(Number);
+  const workMin = (outH * 60 + outM) - (inH * 60 + inM) - 60;
+  const overtimeMin = Math.max(0, workMin - 480);
+
+  await api.updateAttendanceRecord(recordId, {
+    clock_out: time,
+    work_minutes: Math.max(0, workMin),
+    overtime_minutes: overtimeMin,
+    status: overtimeMin > 0 ? "overtime" : "normal",
+  });
+
+  revalidatePath("/attendance");
+  revalidatePath("/dashboard");
+}

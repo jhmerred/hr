@@ -81,3 +81,11 @@ export const createLeaveRequest = (data: Record<string, unknown>) =>
   gw("leave_requests", { method: "POST", body: data });
 export const updateLeaveRequest = (id: string, data: Record<string, unknown>) =>
   gw("leave_requests", { method: "PATCH", id, body: data });
+
+// Attendance Records
+export const getAttendanceRecords = (params?: Record<string, string>) =>
+  gw("attendance_records", { params });
+export const createAttendanceRecord = (data: Record<string, unknown>) =>
+  gw("attendance_records", { method: "POST", body: data });
+export const updateAttendanceRecord = (id: string, data: Record<string, unknown>) =>
+  gw("attendance_records", { method: "PATCH", id, body: data });

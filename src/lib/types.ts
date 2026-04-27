@@ -62,6 +62,20 @@ export interface LeaveRequest {
   updated_at: string;
 }
 
+export interface AttendanceRecord {
+  id: string;
+  employee_id: string;
+  date: string;
+  clock_in: string;
+  clock_out: string;
+  work_minutes: number;
+  overtime_minutes: number;
+  status: "normal" | "late" | "early_leave" | "overtime" | "leave" | "absent";
+  note: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ApiResponse<T> {
   rows: T[];
   total: number;

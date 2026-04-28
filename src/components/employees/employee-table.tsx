@@ -7,6 +7,7 @@ import Link from "next/link";
 import { deleteEmployeeAction } from "@/app/actions";
 import { EMPLOYEE_STATUS_STYLES, getInitial } from "@/lib/constants";
 import { useToast } from "@/components/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export function EmployeeTable({
   employees,
@@ -18,6 +19,7 @@ export function EmployeeTable({
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
   const toast = useToast();
 
   const deptMap = useMemo(() => new Map(departments.map((d) => [d.id, d.name])), [departments]);
@@ -152,14 +154,9 @@ export function EmployeeTable({
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.preventDefault();
-                              if (confirm(`${emp.name}님을 삭제하시겠습니까?`)) {
-                                setDeleting(emp.id);
-                                await deleteEmployeeAction(emp.id);
-                                setDeleting(null);
-                                toast.success(`${emp.name}님이 삭제되었습니다`);
-                              }
+                              setDeleteTarget(emp);
                             }}
                             disabled={isDeleting}
                             className="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors"
@@ -186,6 +183,24 @@ export function EmployeeTable({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (deleteTarget) {
+            setDeleting(deleteTarget.id);
+            await deleteEmployeeAction(deleteTarget.id);
+            setDeleting(null);
+            toast.success(`${deleteTarget.name}님이 삭제되었습니다`);
+            setDeleteTarget(null);
+          }
+        }}
+        title="직원 삭제"
+        description={`${deleteTarget?.name}님을 삭제하시겠습니까? 관련 휴가/근태 데이터도 영향을 받을 수 있습니다.`}
+        confirmLabel="삭제"
+        variant="danger"
+      />
     </div>
   );
 }

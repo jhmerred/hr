@@ -16,7 +16,7 @@ export function ClockPanel({
 }) {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const toast = useToast();
 
   const recordMap = useMemo(

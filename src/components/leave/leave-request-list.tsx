@@ -21,6 +21,7 @@ import {
 } from "@/app/actions";
 import { LEAVE_STATUS_STYLES, getInitial } from "@/lib/constants";
 import { useToast } from "@/components/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export function LeaveRequestList({
   requests,
@@ -33,6 +34,8 @@ export function LeaveRequestList({
 }) {
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [approveTarget, setApproveTarget] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; isApproved: boolean } | null>(null);
   const toast = useToast();
 
   const empMap = new Map(employees.map((e) => [e.id, e]));
@@ -118,12 +121,7 @@ export function LeaveRequestList({
                           <button
                             className="w-7 h-7 rounded-lg bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors"
                             title="승인"
-                            onClick={async () => {
-                              if (confirm("승인하시겠습니까?")) {
-                                await approveLeaveRequestAction(req.id);
-                                toast.success("휴가가 승인되었습니다");
-                              }
-                            }}
+                            onClick={() => setApproveTarget(req.id)}
                           >
                             <Check className="h-3.5 w-3.5 text-green-600" />
                           </button>
@@ -140,15 +138,7 @@ export function LeaveRequestList({
                         <button
                           className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors"
                           title="취소"
-                          onClick={async () => {
-                            const msg = req.status === "approved"
-                              ? "승인된 휴가를 취소하면 잔여일수가 복구됩니다. 취소하시겠습니까?"
-                              : "이 휴가 신청을 취소하시겠습니까?";
-                            if (confirm(msg)) {
-                              await cancelLeaveRequestAction(req.id);
-                              toast.success("휴가가 취소되었습니다");
-                            }
-                          }}
+                          onClick={() => setCancelTarget({ id: req.id, isApproved: req.status === "approved" })}
                         >
                           <Ban className="h-3.5 w-3.5 text-gray-500" />
                         </button>
@@ -245,6 +235,40 @@ export function LeaveRequestList({
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!approveTarget}
+        onClose={() => setApproveTarget(null)}
+        onConfirm={async () => {
+          if (approveTarget) {
+            await approveLeaveRequestAction(approveTarget);
+            toast.success("휴가가 승인되었습니다");
+          }
+        }}
+        title="휴가 승인"
+        description="이 휴가 신청을 승인하시겠습니까? 잔여 일수가 차감됩니다."
+        confirmLabel="승인"
+        variant="default"
+      />
+
+      <ConfirmDialog
+        open={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={async () => {
+          if (cancelTarget) {
+            await cancelLeaveRequestAction(cancelTarget.id);
+            toast.success("휴가가 취소되었습니다");
+          }
+        }}
+        title="휴가 취소"
+        description={
+          cancelTarget?.isApproved
+            ? "승인된 휴가를 취소하면 잔여일수가 복구됩니다. 취소하시겠습니까?"
+            : "이 휴가 신청을 취소하시겠습니까?"
+        }
+        confirmLabel="취소"
+        variant="warning"
+      />
     </>
   );
 }

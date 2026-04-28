@@ -1,51 +1,27 @@
+import { cookies } from "next/headers";
+
 const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
 const APP_SLUG = process.env.APPHUB_APP_SLUG || "hr";
-const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "";
-const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || "";
-
-// OAuth 토큰 캐시
-let cachedToken: { token: string; expiresAt: number } | null = null;
-
-async function getOAuthToken(): Promise<string> {
-  // 캐시된 토큰이 유효하면 재사용
-  if (cachedToken && Date.now() < cachedToken.expiresAt - 60000) {
-    return cachedToken.token;
-  }
-
-  // Client Credentials 방식으로 토큰 발급
-  const res = await fetch(`${API_BASE}/oauth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      scope: "read write",
-      resource: `${API_BASE}/mcp`,
-    }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    console.error(`[oauth] token error ${res.status}: ${text.substring(0, 200)}`);
-    throw new Error(`OAuth token error ${res.status}`);
-  }
-
-  const data = await res.json();
-  cachedToken = {
-    token: data.access_token,
-    expiresAt: Date.now() + (data.expires_in || 3600) * 1000,
-  };
-  return cachedToken.token;
-}
 
 let reqId = 0;
 
-// MCP JSON-RPC 호출 (OAuth Bearer 인증)
-async function mcpCall(toolName: string, args: Record<string, unknown>) {
-  const token = await getOAuthToken();
-  reqId++;
+async function getMCPToken(): Promise<string> {
+  try {
+    const store = await cookies();
+    const token = store.get("_mcp_token");
+    return token?.value || "";
+  } catch {
+    return "";
+  }
+}
 
+async function mcpCall(toolName: string, args: Record<string, unknown>) {
+  const token = await getMCPToken();
+  if (!token) {
+    throw new Error("NO_TOKEN");
+  }
+
+  reqId++;
   const res = await fetch(`${API_BASE}/mcp`, {
     method: "POST",
     headers: {
@@ -78,7 +54,6 @@ async function mcpCall(toolName: string, args: Record<string, unknown>) {
   return json.result;
 }
 
-// Records CRUD
 async function query(table: string, filters?: Record<string, unknown>) {
   const args: Record<string, unknown> = { table_name: table, action: "query", per: 100 };
   if (filters) args.filters = filters;

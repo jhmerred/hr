@@ -56,6 +56,7 @@ export default async function NewLeaveRequestPage() {
         balances={balances}
         holidays={holidays}
         currentUserEmail={user.email}
+        isAdmin={user.role === "admin"}
       />
     </div>
   );

@@ -16,8 +16,16 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { type LucideIcon } from "lucide-react";
 
-const navGroups = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  adminOnly?: boolean;
+}
+
+const navGroups: { label: string | null; items: NavItem[] }[] = [
   {
     label: null,
     items: [
@@ -27,9 +35,9 @@ const navGroups = [
   {
     label: "구성원",
     items: [
-      { href: "/employees", label: "직원 관리", icon: Users },
-      { href: "/departments", label: "부서 관리", icon: Building2 },
-      { href: "/organization", label: "조직도", icon: Network },
+      { href: "/employees", label: "직원 관리", icon: Users, adminOnly: true },
+      { href: "/departments", label: "부서 관리", icon: Building2, adminOnly: true },
+      { href: "/organization", label: "조직도", icon: Network, adminOnly: true },
     ],
   },
   {
@@ -43,7 +51,7 @@ const navGroups = [
     items: [
       { href: "/calendar", label: "캘린더", icon: Calendar },
       { href: "/leave", label: "휴가 관리", icon: CalendarDays },
-      { href: "/leave-types", label: "휴가 유형", icon: ListChecks },
+      { href: "/leave-types", label: "휴가 유형", icon: ListChecks, adminOnly: true },
       { href: "/balances", label: "잔여 휴가", icon: Palmtree },
     ],
   },
@@ -52,10 +60,12 @@ const navGroups = [
 export function Sidebar({
   userName,
   userEmail,
+  userRole = "member",
   onNavigate,
 }: {
   userName: string;
   userEmail: string;
+  userRole?: "admin" | "member";
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -76,47 +86,54 @@ export function Sidebar({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
-        {navGroups.map((group, gi) => (
-          <div key={gi} className={cn("mb-1", group.label && "mt-5")}>
-            {group.label && (
-              <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                {group.label}
-              </p>
-            )}
-            {group.items.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                pathname.startsWith(item.href + "/");
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onNavigate}
-                  className={cn(
-                    "group flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  )}
-                >
-                  <item.icon
+        {navGroups.map((group, gi) => {
+          const visibleItems = group.items.filter(
+            (item) => !item.adminOnly || userRole === "admin"
+          );
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={gi} className={cn("mb-1", group.label && "mt-5")}>
+              {group.label && (
+                <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {group.label}
+                </p>
+              )}
+              {visibleItems.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  pathname.startsWith(item.href + "/");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onNavigate}
                     className={cn(
-                      "h-4 w-4 transition-colors",
+                      "group flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       isActive
-                        ? "text-white"
-                        : "text-gray-400 group-hover:text-gray-600"
+                        ? "bg-gray-900 text-white"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     )}
-                    strokeWidth={isActive ? 2 : 1.8}
-                  />
-                  <span className="flex-1">{item.label}</span>
-                  {isActive && (
-                    <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+                  >
+                    <item.icon
+                      className={cn(
+                        "h-4 w-4 transition-colors",
+                        isActive
+                          ? "text-white"
+                          : "text-gray-400 group-hover:text-gray-600"
+                      )}
+                      strokeWidth={isActive ? 2 : 1.8}
+                    />
+                    <span className="flex-1">{item.label}</span>
+                    {isActive && (
+                      <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Footer - User Info */}
@@ -130,7 +147,7 @@ export function Sidebar({
               {userName}
             </p>
             <p className="text-xs text-gray-400 truncate">
-              {userEmail || "HR Manager"}
+              {userRole === "admin" ? "관리자" : "직원"}
             </p>
           </div>
           <a

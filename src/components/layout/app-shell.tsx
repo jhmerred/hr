@@ -9,10 +9,12 @@ export function AppShell({
   children,
   userName,
   userEmail,
+  userRole = "member",
 }: {
   children: React.ReactNode;
   userName: string;
   userEmail: string;
+  userRole?: "admin" | "member";
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -43,6 +45,7 @@ export function AppShell({
         <Sidebar
           userName={userName}
           userEmail={userEmail}
+          userRole={userRole}
           onNavigate={() => setSidebarOpen(false)}
         />
       </div>

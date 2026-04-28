@@ -1,3 +1,4 @@
+import { getAuthUser, requireAdmin } from "@/lib/auth";
 import { getEmployees, getDepartments } from "@/lib/api";
 import { Employee, Department } from "@/lib/types";
 import { Building2, Users } from "lucide-react";
@@ -8,6 +9,9 @@ import { safeParallel } from "@/lib/safe-fetch";
 import { ErrorState } from "@/components/error-state";
 
 export default async function OrganizationPage() {
+  const user = await getAuthUser();
+  requireAdmin(user);
+
   const result = await safeParallel(
     () => getEmployees(),
     () => getDepartments(),

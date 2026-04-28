@@ -5,8 +5,12 @@ import { redirect } from "next/navigation";
 import { safeParallel } from "@/lib/safe-fetch";
 import { ErrorState } from "@/components/error-state";
 import { EmployeeCreateButton } from "@/components/employees/employee-create-button";
+import { getAuthUser, requireAdmin } from "@/lib/auth";
 
 export default async function EmployeesPage() {
+  const user = await getAuthUser();
+  requireAdmin(user);
+
   const result = await safeParallel(
     () => getEmployees(),
     () => getDepartments(),

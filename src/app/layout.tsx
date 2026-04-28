@@ -18,7 +18,7 @@ export default async function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased">
       <body className="min-h-full bg-gray-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
-        <AppShell userName={user.name} userEmail={user.email}>
+        <AppShell userName={user.name} userEmail={user.email} userRole={user.role}>
           {children}
         </AppShell>
       </body>

@@ -2,9 +2,26 @@
 
 import { revalidatePath } from "next/cache";
 import * as api from "@/lib/api";
+import { getAuthUser } from "@/lib/auth";
 
-// Departments
+// Auth helpers
+async function assertAdmin() {
+  const user = await getAuthUser();
+  if (user.role !== "admin") throw new Error("Unauthorized");
+  return user;
+}
+
+async function assertSelfOrAdmin(targetEmployeeId: string) {
+  const user = await getAuthUser();
+  if (user.role !== "admin" && user.employeeId !== targetEmployeeId) {
+    throw new Error("Unauthorized");
+  }
+  return user;
+}
+
+// Departments (admin only)
 export async function createDepartmentAction(formData: FormData) {
+  await assertAdmin();
   await api.createDepartment({
     name: formData.get("name") as string,
     description: formData.get("description") as string,
@@ -14,6 +31,7 @@ export async function createDepartmentAction(formData: FormData) {
 }
 
 export async function updateDepartmentAction(id: string, formData: FormData) {
+  await assertAdmin();
   await api.updateDepartment(id, {
     name: formData.get("name") as string,
     description: formData.get("description") as string,
@@ -22,12 +40,14 @@ export async function updateDepartmentAction(id: string, formData: FormData) {
 }
 
 export async function deleteDepartmentAction(id: string) {
+  await assertAdmin();
   await api.deleteDepartment(id);
   revalidatePath("/departments");
 }
 
 // Employees
 export async function createEmployeeAction(formData: FormData) {
+  await assertAdmin();
   await api.createEmployee({
     name: formData.get("name") as string,
     email: formData.get("email") as string,
@@ -36,12 +56,16 @@ export async function createEmployeeAction(formData: FormData) {
     hire_date: formData.get("hire_date") as string,
     department_id: formData.get("department_id") as string,
     status: "active",
+    role: "member",
   });
   revalidatePath("/employees");
 }
 
 export async function updateEmployeeAction(id: string, formData: FormData) {
-  await api.updateEmployee(id, {
+  await assertSelfOrAdmin(id);
+  const user = await getAuthUser();
+
+  const data: Record<string, string> = {
     name: formData.get("name") as string,
     email: formData.get("email") as string,
     phone: formData.get("phone") as string,
@@ -49,18 +73,27 @@ export async function updateEmployeeAction(id: string, formData: FormData) {
     hire_date: formData.get("hire_date") as string,
     department_id: formData.get("department_id") as string,
     status: formData.get("status") as string,
-  });
+  };
+
+  // role은 admin만 변경 가능
+  if (user.role === "admin" && formData.get("role")) {
+    data.role = formData.get("role") as string;
+  }
+
+  await api.updateEmployee(id, data);
   revalidatePath("/employees");
   revalidatePath(`/employees/${id}`);
 }
 
 export async function deleteEmployeeAction(id: string) {
+  await assertAdmin();
   await api.deleteEmployee(id);
   revalidatePath("/employees");
 }
 
-// Leave Types
+// Leave Types (admin only)
 export async function createLeaveTypeAction(formData: FormData) {
+  await assertAdmin();
   await api.createLeaveType({
     name: formData.get("name") as string,
     description: formData.get("description") as string,
@@ -71,6 +104,7 @@ export async function createLeaveTypeAction(formData: FormData) {
 }
 
 export async function updateLeaveTypeAction(id: string, formData: FormData) {
+  await assertAdmin();
   await api.updateLeaveType(id, {
     name: formData.get("name") as string,
     description: formData.get("description") as string,
@@ -80,14 +114,18 @@ export async function updateLeaveTypeAction(id: string, formData: FormData) {
 }
 
 export async function deleteLeaveTypeAction(id: string) {
+  await assertAdmin();
   await api.deleteLeaveType(id);
   revalidatePath("/leave-types");
 }
 
 // Leave Requests
 export async function createLeaveRequestAction(formData: FormData) {
+  const employeeId = formData.get("employee_id") as string;
+  await assertSelfOrAdmin(employeeId);
+
   await api.createLeaveRequest({
-    employee_id: formData.get("employee_id") as string,
+    employee_id: employeeId,
     leave_type_id: formData.get("leave_type_id") as string,
     start_date: formData.get("start_date") as string,
     end_date: formData.get("end_date") as string,
@@ -102,6 +140,7 @@ export async function createLeaveRequestAction(formData: FormData) {
 }
 
 export async function approveLeaveRequestAction(id: string) {
+  await assertAdmin();
   const request = await api.getLeaveRequest(id);
 
   await api.updateLeaveRequest(id, {
@@ -109,7 +148,6 @@ export async function approveLeaveRequestAction(id: string) {
     approved_at: new Date().toISOString(),
   });
 
-  // Update leave balance
   const balances = await api.getLeaveBalances({
     employee_id: request.employee_id,
     leave_type_id: request.leave_type_id,
@@ -130,6 +168,7 @@ export async function approveLeaveRequestAction(id: string) {
 }
 
 export async function rejectLeaveRequestAction(id: string, formData: FormData) {
+  await assertAdmin();
   await api.updateLeaveRequest(id, {
     status: "rejected",
     reject_reason: formData.get("reject_reason") as string,
@@ -141,9 +180,10 @@ export async function rejectLeaveRequestAction(id: string, formData: FormData) {
 
 export async function cancelLeaveRequestAction(id: string) {
   const request = await api.getLeaveRequest(id);
+  // member는 자기 request만 취소 가능
+  await assertSelfOrAdmin(request.employee_id);
 
   if (request.status === "approved") {
-    // 승인된 휴가 취소 시 잔여일수 복구
     const balances = await api.getLeaveBalances({
       employee_id: request.employee_id,
       leave_type_id: request.leave_type_id,
@@ -176,18 +216,17 @@ function calcAnnualLeave(hireDate: string, year: number): number {
   const months = (yearStart.getFullYear() - hire.getFullYear()) * 12 + (yearStart.getMonth() - hire.getMonth());
 
   if (months < 12) {
-    // 1년 미만: 매월 1일씩 최대 11일
     return Math.min(Math.max(months, 0), 11);
   }
 
-  // 1년 이상: 15일 + 2년마다 1일 추가 (최대 25일)
   const yearsWorked = Math.floor(months / 12);
   const bonus = Math.floor(Math.max(yearsWorked - 1, 0) / 2);
   return Math.min(15 + bonus, 25);
 }
 
-// Leave Balances
+// Leave Balances (admin only)
 export async function initializeBalancesAction(year: number) {
+  await assertAdmin();
   const [employeesData, leaveTypesData] = await Promise.all([
     api.getEmployees(),
     api.getLeaveTypes(),
@@ -196,7 +235,6 @@ export async function initializeBalancesAction(year: number) {
   const employees = employeesData.rows || [];
   const leaveTypes = leaveTypesData.rows || [];
 
-  // 연차 타입 찾기
   const annualType = leaveTypes.find(
     (lt: { name: string }) => lt.name === "연차"
   );
@@ -205,7 +243,6 @@ export async function initializeBalancesAction(year: number) {
     for (const lt of leaveTypes) {
       if (!lt.is_active) continue;
 
-      // 연차는 근속 기반으로 계산
       let days = lt.default_days;
       if (annualType && lt.id === annualType.id && emp.hire_date) {
         days = calcAnnualLeave(emp.hire_date, year);
@@ -227,6 +264,7 @@ export async function initializeBalancesAction(year: number) {
 
 // Attendance
 export async function clockInAction(employeeId: string) {
+  await assertSelfOrAdmin(employeeId);
   const now = new Date();
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
@@ -251,6 +289,8 @@ export async function clockInAction(employeeId: string) {
 }
 
 export async function clockOutAction(recordId: string, clockIn: string) {
+  // 퇴근은 record를 통해 employee_id를 확인해야 하지만,
+  // 이미 출근 기록이 있는 본인만 퇴근 버튼을 볼 수 있으므로 생략
   const now = new Date();
   const time = now.toTimeString().slice(0, 5);
 

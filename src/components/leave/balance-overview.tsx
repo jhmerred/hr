@@ -11,10 +11,12 @@ export function BalanceOverview({
   balances,
   employees,
   leaveTypes,
+  canInitialize = true,
 }: {
   balances: LeaveBalance[];
   employees: Employee[];
   leaveTypes: LeaveType[];
+  canInitialize?: boolean;
 }) {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
@@ -89,14 +91,16 @@ export function BalanceOverview({
             <span>사용 {totalUsed}일</span>
             <span>잔여 {totalRemaining}일</span>
           </div>
-          <button
-            onClick={handleInitialize}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-50"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-            {year}년 초기화
-          </button>
+          {canInitialize && (
+            <button
+              onClick={handleInitialize}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              {year}년 초기화
+            </button>
+          )}
         </div>
       </div>
 

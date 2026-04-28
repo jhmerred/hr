@@ -1,3 +1,4 @@
+import { getAuthUser, requireAdmin } from "@/lib/auth";
 import { getDepartments, getEmployees } from "@/lib/api";
 import { Department, Employee } from "@/lib/types";
 import { DepartmentList } from "@/components/departments/department-list";
@@ -6,6 +7,9 @@ import { safeParallel } from "@/lib/safe-fetch";
 import { ErrorState } from "@/components/error-state";
 
 export default async function DepartmentsPage() {
+  const user = await getAuthUser();
+  requireAdmin(user);
+
   const result = await safeParallel(
     () => getDepartments(),
     () => getEmployees(),

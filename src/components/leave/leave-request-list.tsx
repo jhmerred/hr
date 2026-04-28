@@ -27,10 +27,12 @@ export function LeaveRequestList({
   requests,
   employees,
   leaveTypes,
+  canApprove = true,
 }: {
   requests: LeaveRequest[];
   employees: Employee[];
   leaveTypes: LeaveType[];
+  canApprove?: boolean;
 }) {
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -116,7 +118,7 @@ export function LeaveRequestList({
                   </td>
                   <td className="py-3 px-5 text-right">
                     <div className="flex justify-end gap-1">
-                      {req.status === "pending" && (
+                      {req.status === "pending" && canApprove && (
                         <>
                           <button
                             className="w-7 h-7 rounded-lg bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors"

@@ -32,12 +32,14 @@ export function LeaveRequestForm({
   balances,
   holidays = [],
   currentUserEmail,
+  isAdmin = true,
 }: {
   employees: Employee[];
   leaveTypes: LeaveType[];
   balances: LeaveBalance[];
   holidays?: Holiday[];
   currentUserEmail?: string;
+  isAdmin?: boolean;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -242,32 +244,42 @@ export function LeaveRequestForm({
     <div className="space-y-5">
       {/* 1. 신청자 + 휴가 유형 */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-5">
-        <div>
-          <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
-            <User className="h-3.5 w-3.5 text-gray-400" />
-            신청자
-            <span className="text-red-400">*</span>
-          </label>
-          <div className="relative">
-            <select
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all appearance-none"
-            >
-              <option value="">직원을 선택하세요</option>
-              {employees.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.name} · {emp.position}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+        {isAdmin ? (
+          <div>
+            <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
+              <User className="h-3.5 w-3.5 text-gray-400" />
+              신청자
+              <span className="text-red-400">*</span>
+            </label>
+            <div className="relative">
+              <select
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all appearance-none"
+              >
+                <option value="">직원을 선택하세요</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name} · {emp.position}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-50 border border-gray-200">
+            <User className="h-4 w-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-700">
+              {matchedEmployee?.name || "본인"}
+            </span>
+            <span className="text-xs text-gray-400">{matchedEmployee?.position}</span>
+          </div>
+        )}
 
         <div>
           <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">

@@ -1,3 +1,4 @@
+import { getAuthUser, requireAdmin } from "@/lib/auth";
 import { getLeaveTypes } from "@/lib/api";
 import { LeaveType } from "@/lib/types";
 import { LeaveTypeList } from "@/components/leave/leave-type-list";
@@ -6,6 +7,9 @@ import { safeParallel } from "@/lib/safe-fetch";
 import { ErrorState } from "@/components/error-state";
 
 export default async function LeaveTypesPage() {
+  const user = await getAuthUser();
+  requireAdmin(user);
+
   const result = await safeParallel(
     () => getLeaveTypes(),
   );

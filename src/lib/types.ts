@@ -15,6 +15,7 @@ export interface Employee {
   position: string;
   hire_date: string;
   status: "active" | "inactive" | "on_leave";
+  role: "admin" | "member";
   department_id: string;
   department?: Department;
   created_at: string;

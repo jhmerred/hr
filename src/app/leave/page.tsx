@@ -6,8 +6,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { safeParallel } from "@/lib/safe-fetch";
 import { ErrorState } from "@/components/error-state";
+import { getAuthUser } from "@/lib/auth";
 
 export default async function LeavePage() {
+  const user = await getAuthUser();
+
   const result = await safeParallel(
     () => getLeaveRequests(),
     () => getEmployees(),
@@ -20,19 +23,26 @@ export default async function LeavePage() {
   }
 
   const [requestsData, employeesData, leaveTypesData] = result.results;
-  const requests: LeaveRequest[] = requestsData.rows || [];
+  const allRequests: LeaveRequest[] = requestsData.rows || [];
   const employees: Employee[] = employeesData.rows || [];
   const leaveTypes: LeaveType[] = leaveTypesData.rows || [];
+
+  // member는 자기 휴가만
+  const requests = user.role === "admin"
+    ? allRequests
+    : allRequests.filter((r) => r.employee_id === user.employeeId);
+
+  const isAdmin = user.role === "admin";
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">
-            휴가 관리
+            {isAdmin ? "휴가 관리" : "내 휴가"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            휴가 신청 및 승인을 관리합니다
+            {isAdmin ? "휴가 신청 및 승인을 관리합니다" : "내 휴가 신청 내역을 확인합니다"}
           </p>
         </div>
         <Link
@@ -47,6 +57,7 @@ export default async function LeavePage() {
         requests={requests}
         employees={employees}
         leaveTypes={leaveTypes}
+        canApprove={isAdmin}
       />
     </div>
   );

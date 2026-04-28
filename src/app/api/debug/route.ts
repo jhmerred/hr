@@ -2,69 +2,57 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
-  const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "(not set)";
-  const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || "(not set)";
+  const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "";
+  const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || "";
 
-  // 1. OAuth 토큰 발급 시도
-  let tokenResult: Record<string, unknown> = {};
-  let accessToken = "";
-  try {
-    const res = await fetch(`${API_BASE}/oauth/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        grant_type: "client_credentials",
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        scope: "read write",
-        resource: `${API_BASE}/mcp`,
-      }),
-    });
-    const text = await res.text();
-    tokenResult = { status: res.status, body: text.substring(0, 500) };
-    if (res.ok) {
-      const data = JSON.parse(text);
-      accessToken = data.access_token || "";
-      tokenResult.tokenPrefix = accessToken.substring(0, 20) + "...";
-    }
-  } catch (e) {
-    tokenResult = { error: String(e) };
-  }
+  const attempts = [
+    {
+      name: "client_credentials (minimal)",
+      body: { grant_type: "client_credentials", client_id: CLIENT_ID, client_secret: CLIENT_SECRET },
+    },
+    {
+      name: "client_credentials + scope",
+      body: { grant_type: "client_credentials", client_id: CLIENT_ID, client_secret: CLIENT_SECRET, scope: "read write" },
+    },
+    {
+      name: "client_credentials + redirect_uri",
+      body: { grant_type: "client_credentials", client_id: CLIENT_ID, client_secret: CLIENT_SECRET, redirect_uri: "https://jocodingax-ai-hr.jocodingax.ai/api/callback" },
+    },
+    {
+      name: "client_credentials Basic auth",
+      body: { grant_type: "client_credentials" },
+      basicAuth: true,
+    },
+    {
+      name: "client_credentials Basic + scope",
+      body: { grant_type: "client_credentials", scope: "read write" },
+      basicAuth: true,
+    },
+  ];
 
-  // 2. 토큰으로 MCP 호출 시도
-  let mcpResult: Record<string, unknown> = {};
-  if (accessToken) {
+  const results = [];
+
+  for (const attempt of attempts) {
     try {
-      const res = await fetch(`${API_BASE}/mcp`, {
+      const headers: Record<string, string> = { "Content-Type": "application/x-www-form-urlencoded" };
+      if (attempt.basicAuth) {
+        headers["Authorization"] = "Basic " + Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
+      }
+      const res = await fetch(`${API_BASE}/oauth/token`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          method: "tools/call",
-          params: {
-            name: "records",
-            arguments: { app_slug: "hr", table_name: "employees", action: "query", per: 1 },
-          },
-          id: 1,
-        }),
+        headers,
+        body: new URLSearchParams(attempt.body as Record<string, string>),
       });
       const text = await res.text();
-      mcpResult = { status: res.status, body: text.substring(0, 500) };
+      results.push({
+        name: attempt.name,
+        status: res.status,
+        body: text.substring(0, 300),
+      });
     } catch (e) {
-      mcpResult = { error: String(e) };
+      results.push({ name: attempt.name, error: String(e) });
     }
   }
 
-  return NextResponse.json({
-    env: {
-      API_BASE,
-      CLIENT_ID: CLIENT_ID.substring(0, 10) + "...",
-      CLIENT_SECRET_SET: CLIENT_SECRET !== "(not set)",
-    },
-    tokenResult,
-    mcpResult,
-  });
+  return NextResponse.json({ results });
 }

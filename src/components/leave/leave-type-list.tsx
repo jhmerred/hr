@@ -23,6 +23,7 @@ import {
   deleteLeaveTypeAction,
 } from "@/app/actions";
 import { useToast } from "@/components/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const inputCls =
   "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300";
@@ -31,6 +32,7 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<LeaveType | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LeaveType | null>(null);
   const toast = useToast();
 
   return (
@@ -93,16 +95,7 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                     <Pencil className="h-3.5 w-3.5 text-gray-500" />
                   </button>
                   <button
-                    onClick={async () => {
-                      if (
-                        confirm(`"${lt.name}" 휴가 유형을 삭제하시겠습니까?`)
-                      ) {
-                        setDeleting(lt.id);
-                        await deleteLeaveTypeAction(lt.id);
-                        setDeleting(null);
-                        toast.success("휴가 유형이 삭제되었습니다");
-                      }
-                    }}
+                    onClick={() => setDeleteTarget(lt)}
                     disabled={deleting === lt.id}
                     className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors"
                     title="삭제"
@@ -218,6 +211,23 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (deleteTarget) {
+            setDeleting(deleteTarget.id);
+            await deleteLeaveTypeAction(deleteTarget.id);
+            setDeleting(null);
+            toast.success("휴가 유형이 삭제되었습니다");
+          }
+        }}
+        title="휴가 유형 삭제"
+        description={`"${deleteTarget?.name}" 유형을 삭제하시겠습니까? 해당 유형으로 신청된 휴가에 영향을 줄 수 있습니다.`}
+        confirmLabel="삭제"
+        variant="danger"
+      />
     </div>
   );
 }

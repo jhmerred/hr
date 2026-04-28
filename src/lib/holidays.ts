@@ -4,43 +4,96 @@ export interface Holiday {
   type: "public" | "substitute" | "labor";
 }
 
-// Nager.Date API에서 한국 공휴일 가져오기
+// 한국 공휴일 fallback (API 실패 시 사용)
+const FALLBACK_HOLIDAYS: Record<number, Holiday[]> = {
+  2025: [
+    { date: "2025-01-01", name: "신정", type: "public" },
+    { date: "2025-01-28", name: "설날 연휴", type: "public" },
+    { date: "2025-01-29", name: "설날", type: "public" },
+    { date: "2025-01-30", name: "설날 연휴", type: "public" },
+    { date: "2025-03-01", name: "삼일절", type: "public" },
+    { date: "2025-05-01", name: "근로자의 날", type: "labor" },
+    { date: "2025-05-05", name: "어린이날", type: "public" },
+    { date: "2025-05-06", name: "부처님오신날", type: "public" },
+    { date: "2025-06-06", name: "현충일", type: "public" },
+    { date: "2025-08-15", name: "광복절", type: "public" },
+    { date: "2025-10-03", name: "개천절", type: "public" },
+    { date: "2025-10-05", name: "추석 연휴", type: "public" },
+    { date: "2025-10-06", name: "추석", type: "public" },
+    { date: "2025-10-07", name: "추석 연휴", type: "public" },
+    { date: "2025-10-08", name: "추석 대체공휴일", type: "substitute" },
+    { date: "2025-10-09", name: "한글날", type: "public" },
+    { date: "2025-12-25", name: "크리스마스", type: "public" },
+  ],
+  2026: [
+    { date: "2026-01-01", name: "신정", type: "public" },
+    { date: "2026-02-16", name: "설날 연휴", type: "public" },
+    { date: "2026-02-17", name: "설날", type: "public" },
+    { date: "2026-02-18", name: "설날 연휴", type: "public" },
+    { date: "2026-03-01", name: "삼일절", type: "public" },
+    { date: "2026-03-02", name: "삼일절 대체공휴일", type: "substitute" },
+    { date: "2026-05-01", name: "근로자의 날", type: "labor" },
+    { date: "2026-05-05", name: "어린이날", type: "public" },
+    { date: "2026-05-24", name: "부처님오신날", type: "public" },
+    { date: "2026-05-25", name: "부처님오신날 대체공휴일", type: "substitute" },
+    { date: "2026-06-06", name: "현충일", type: "public" },
+    { date: "2026-08-15", name: "광복절", type: "public" },
+    { date: "2026-09-24", name: "추석 연휴", type: "public" },
+    { date: "2026-09-25", name: "추석", type: "public" },
+    { date: "2026-09-26", name: "추석 연휴", type: "public" },
+    { date: "2026-10-03", name: "개천절", type: "public" },
+    { date: "2026-10-09", name: "한글날", type: "public" },
+    { date: "2026-12-25", name: "크리스마스", type: "public" },
+  ],
+  2027: [
+    { date: "2027-01-01", name: "신정", type: "public" },
+    { date: "2027-02-06", name: "설날 연휴", type: "public" },
+    { date: "2027-02-07", name: "설날", type: "public" },
+    { date: "2027-02-08", name: "설날 연휴", type: "public" },
+    { date: "2027-03-01", name: "삼일절", type: "public" },
+    { date: "2027-05-01", name: "근로자의 날", type: "labor" },
+    { date: "2027-05-05", name: "어린이날", type: "public" },
+    { date: "2027-05-13", name: "부처님오신날", type: "public" },
+    { date: "2027-06-06", name: "현충일", type: "public" },
+    { date: "2027-08-15", name: "광복절", type: "public" },
+    { date: "2027-09-14", name: "추석 연휴", type: "public" },
+    { date: "2027-09-15", name: "추석", type: "public" },
+    { date: "2027-09-16", name: "추석 연휴", type: "public" },
+    { date: "2027-10-03", name: "개천절", type: "public" },
+    { date: "2027-10-09", name: "한글날", type: "public" },
+    { date: "2027-12-25", name: "크리스마스", type: "public" },
+  ],
+};
+
+// Nager.Date API에서 한국 공휴일 가져오기 (fallback 포함)
 async function fetchHolidaysFromAPI(year: number): Promise<Holiday[]> {
   try {
     const res = await fetch(
       `https://date.nager.at/api/v3/PublicHolidays/${year}/KR`,
-      { next: { revalidate: 86400 } } // 24시간 캐싱
+      { next: { revalidate: 86400 } }
     );
-    if (!res.ok) return [];
+    if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
-    return data.map(
+    const holidays = data.map(
       (h: { date: string; localName: string; name: string }) => ({
         date: h.date,
         name: h.localName || h.name,
         type: "public" as const,
       })
     );
+    // 근로자의 날 추가
+    holidays.push({ date: `${year}-05-01`, name: "근로자의 날", type: "labor" as const });
+    return holidays;
   } catch {
-    return [];
+    // API 실패 시 fallback 데이터 사용
+    console.log(`[holidays] API failed for ${year}, using fallback`);
+    return FALLBACK_HOLIDAYS[year] || [];
   }
 }
 
-// 근로자의 날은 근로기준법상 유급휴일로 API에 안 나오므로 별도 추가
-function getLaborDay(year: number): Holiday {
-  return {
-    date: `${year}-05-01`,
-    name: "근로자의 날",
-    type: "labor",
-  };
-}
-
-// 메인: API + 근로자의 날 병합
+// 메인
 export async function getHolidays(year: number): Promise<Holiday[]> {
-  const apiHolidays = await fetchHolidaysFromAPI(year);
-  const laborDay = getLaborDay(year);
-
-  const all = [...apiHolidays, laborDay];
-  // 날짜순 정렬, 중복 제거
+  const all = await fetchHolidaysFromAPI(year);
   all.sort((a, b) => a.date.localeCompare(b.date));
   const seen = new Set<string>();
   return all.filter((h) => {

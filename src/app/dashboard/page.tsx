@@ -66,9 +66,15 @@ export default async function DashboardPage() {
   const weekStart = monday.toISOString().split("T")[0];
   const weekEnd = sunday.toISOString().split("T")[0];
 
-  const thisWeekAttendance = attendance.filter((a: { date: string }) => {
+  let thisWeekAttendance = attendance.filter((a: { date: string }) => {
     return a.date >= weekStart && a.date <= weekEnd;
   });
+  // 이번 주 데이터 없으면 최근 데이터로 대체
+  const recentAttendance = [...attendance]
+    .sort((a: { date: string }, b: { date: string }) => b.date.localeCompare(a.date));
+  if (thisWeekAttendance.length === 0) {
+    thisWeekAttendance = recentAttendance;
+  }
   const totalOvertimeMin = thisWeekAttendance.reduce(
     (sum: number, a: { overtime_minutes: number }) => sum + (a.overtime_minutes || 0),
     0
@@ -327,7 +333,7 @@ export default async function DashboardPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <h2 className="text-[14px] font-bold text-gray-900">
-            이번 주 근태
+            최근 근태
           </h2>
           <Link
             href="/attendance"

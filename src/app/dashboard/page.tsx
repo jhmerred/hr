@@ -14,19 +14,28 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { formatLocalDate } from "@/lib/holidays";
-import { getInitial } from "@/lib/constants";
-import { ATTENDANCE_STATUS_STYLES } from "@/lib/constants";
+import { getInitial, ATTENDANCE_STATUS_STYLES } from "@/lib/constants";
+import { safeParallel } from "@/lib/safe-fetch";
+import { ErrorState } from "@/components/error-state";
 
 export default async function DashboardPage() {
+  const result = await safeParallel(
+    () => getEmployees(),
+    () => getLeaveRequests(),
+    () => getDepartments(),
+    () => getAttendanceRecords(),
+    () => getLeaveBalances()
+  );
+
+  if (!result.ok) {
+    if (result.isTokenError) redirect("/api/auth/login");
+    return <ErrorState />;
+  }
+
   const [employeesData, requestsData, departmentsData, attendanceData, balancesData] =
-    await Promise.all([
-      getEmployees().catch(() => ({ rows: [] })),
-      getLeaveRequests().catch(() => ({ rows: [] })),
-      getDepartments().catch(() => ({ rows: [] })),
-      getAttendanceRecords().catch(() => ({ rows: [] })),
-      getLeaveBalances().catch(() => ({ rows: [] })),
-    ]);
+    result.results;
 
   const employees = employeesData.rows || [];
   const requests = requestsData.rows || [];

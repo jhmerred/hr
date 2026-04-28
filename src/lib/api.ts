@@ -40,13 +40,20 @@ async function mcpCall(toolName: string, args: Record<string, unknown>) {
   if (!res.ok) {
     const text = await res.text();
     console.error(`[mcp] ${res.status}: ${text.substring(0, 200)}`);
+    if (res.status === 401) {
+      throw new Error("TOKEN_EXPIRED");
+    }
     throw new Error(`MCP ${res.status}`);
   }
 
   const json = await res.json();
   if (json.error) {
-    console.error(`[mcp] error: ${json.error.message}`);
-    throw new Error(json.error.message);
+    const msg = json.error.message || "";
+    console.error(`[mcp] error: ${msg}`);
+    if (msg.includes("인증") || msg.includes("토큰") || json.error.code === -32001) {
+      throw new Error("TOKEN_EXPIRED");
+    }
+    throw new Error(msg);
   }
 
   const text = json.result?.content?.[0]?.text;

@@ -3,18 +3,28 @@ import { Employee, LeaveType, LeaveBalance } from "@/lib/types";
 import { getHolidays } from "@/lib/holidays";
 import { LeaveRequestForm } from "@/components/leave/leave-request-form";
 import { getAuthUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { safeParallel } from "@/lib/safe-fetch";
+import { ErrorState } from "@/components/error-state";
 
 export default async function NewLeaveRequestPage() {
   const currentYear = new Date().getFullYear();
 
-  const [employeesData, leaveTypesData, balancesData, holidays, user] =
-    await Promise.all([
-      getEmployees().catch(() => ({ rows: [] })),
-      getLeaveTypes().catch(() => ({ rows: [] })),
-      getLeaveBalances().catch(() => ({ rows: [] })),
-      getHolidays(currentYear),
-      getAuthUser(),
-    ]);
+  const result = await safeParallel(
+    () => getEmployees(),
+    () => getLeaveTypes(),
+    () => getLeaveBalances(),
+  );
+
+  if (!result.ok) {
+    if (result.isTokenError) redirect("/api/auth/login");
+    return <ErrorState />;
+  }
+
+  const [employeesData, leaveTypesData, balancesData] = result.results;
+
+  const holidays = await getHolidays(currentYear).catch(() => []);
+  const user = await getAuthUser();
 
   const employees: Employee[] = (employeesData.rows || []).filter(
     (e: Employee) => e.status === "active"

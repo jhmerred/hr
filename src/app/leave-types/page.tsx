@@ -1,9 +1,21 @@
 import { getLeaveTypes } from "@/lib/api";
 import { LeaveType } from "@/lib/types";
 import { LeaveTypeList } from "@/components/leave/leave-type-list";
+import { redirect } from "next/navigation";
+import { safeParallel } from "@/lib/safe-fetch";
+import { ErrorState } from "@/components/error-state";
 
 export default async function LeaveTypesPage() {
-  const data = await getLeaveTypes().catch(() => ({ rows: [] }));
+  const result = await safeParallel(
+    () => getLeaveTypes(),
+  );
+
+  if (!result.ok) {
+    if (result.isTokenError) redirect("/api/auth/login");
+    return <ErrorState />;
+  }
+
+  const [data] = result.results;
   const leaveTypes: LeaveType[] = data.rows || [];
 
   return (

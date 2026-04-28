@@ -59,8 +59,8 @@ export function BalanceOverview({
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[600px]">
           <thead>
             <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-200">
               <th className="text-left py-3 px-5">직원</th>

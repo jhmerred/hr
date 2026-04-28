@@ -5,13 +5,23 @@ import {
 } from "@/lib/api";
 import { Employee, Department, AttendanceRecord } from "@/lib/types";
 import { AttendanceDashboard } from "@/components/attendance/attendance-dashboard";
-export default async function AttendancePage() {
-  const [attendanceData, employeesData, departmentsData] = await Promise.all([
-    getAttendanceRecords().catch(() => ({ rows: [] })),
-    getEmployees().catch(() => ({ rows: [] })),
-    getDepartments().catch(() => ({ rows: [] })),
-  ]);
+import { redirect } from "next/navigation";
+import { safeParallel } from "@/lib/safe-fetch";
+import { ErrorState } from "@/components/error-state";
 
+export default async function AttendancePage() {
+  const result = await safeParallel(
+    () => getAttendanceRecords(),
+    () => getEmployees(),
+    () => getDepartments(),
+  );
+
+  if (!result.ok) {
+    if (result.isTokenError) redirect("/api/auth/login");
+    return <ErrorState />;
+  }
+
+  const [attendanceData, employeesData, departmentsData] = result.results;
   const records: AttendanceRecord[] = attendanceData.rows || [];
   const employees: Employee[] = employeesData.rows || [];
   const departments: Department[] = departmentsData.rows || [];

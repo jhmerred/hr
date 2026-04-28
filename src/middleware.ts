@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // API 라우트와 정적 파일은 건너뛰기
+  // API, 정적 파일은 건너뛰기
   if (
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
@@ -12,14 +12,69 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // _mcp_token 쿠키가 없으면 OAuth 로그인으로 리다이렉트
   const token = request.cookies.get("_mcp_token");
+  const refreshToken = request.cookies.get("_mcp_refresh");
+
+  // 토큰 없으면 로그인으로
   if (!token) {
-    const loginUrl = new URL("/api/auth/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    // refresh token이 있으면 갱신 시도
+    if (refreshToken) {
+      const refreshed = await tryRefreshToken(refreshToken.value, request);
+      if (refreshed) return refreshed;
+    }
+    return NextResponse.redirect(new URL("/api/auth/login", request.url));
   }
 
   return NextResponse.next();
+}
+
+async function tryRefreshToken(
+  refreshToken: string,
+  request: NextRequest
+): Promise<NextResponse | null> {
+  const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
+  const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "";
+  const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || "";
+
+  try {
+    const res = await fetch(`${API_BASE}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+      }),
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    if (!data.access_token) return null;
+
+    // 새 토큰으로 쿠키 교체 후 원래 페이지로
+    const response = NextResponse.next();
+    response.cookies.set("_mcp_token", data.access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: data.expires_in || 3600,
+      path: "/",
+    });
+    if (data.refresh_token) {
+      response.cookies.set("_mcp_refresh", data.refresh_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 86400 * 30,
+        path: "/",
+      });
+    }
+    return response;
+  } catch {
+    return null;
+  }
 }
 
 export const config = {

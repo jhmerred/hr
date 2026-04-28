@@ -3,13 +3,22 @@ import { Employee, Department } from "@/lib/types";
 import { EmployeeTable } from "@/components/employees/employee-table";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { safeParallel } from "@/lib/safe-fetch";
+import { ErrorState } from "@/components/error-state";
 
 export default async function EmployeesPage() {
-  const [employeesData, departmentsData] = await Promise.all([
-    getEmployees().catch(() => ({ rows: [] })),
-    getDepartments().catch(() => ({ rows: [] })),
-  ]);
+  const result = await safeParallel(
+    () => getEmployees(),
+    () => getDepartments(),
+  );
 
+  if (!result.ok) {
+    if (result.isTokenError) redirect("/api/auth/login");
+    return <ErrorState />;
+  }
+
+  const [employeesData, departmentsData] = result.results;
   const employees: Employee[] = employeesData.rows || [];
   const departments: Department[] = departmentsData.rows || [];
 

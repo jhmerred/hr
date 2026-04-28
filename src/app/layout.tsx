@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/sidebar";
+import { AppShell } from "@/components/layout/app-shell";
 import { getAuthUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -17,11 +17,10 @@ export default async function RootLayout({
 
   return (
     <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full flex bg-gray-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
-        <Sidebar userName={user.name} userEmail={user.email} />
-        <main className="flex-1 ml-[240px] min-h-screen">
-          <div className="max-w-[1200px] mx-auto px-8 py-7">{children}</div>
-        </main>
+      <body className="min-h-full bg-gray-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
+        <AppShell userName={user.name} userEmail={user.email}>
+          {children}
+        </AppShell>
       </body>
     </html>
   );

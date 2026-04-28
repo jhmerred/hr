@@ -3,14 +3,23 @@ import { LeaveRequest, Employee, LeaveType } from "@/lib/types";
 import { LeaveRequestList } from "@/components/leave/leave-request-list";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { safeParallel } from "@/lib/safe-fetch";
+import { ErrorState } from "@/components/error-state";
 
 export default async function LeavePage() {
-  const [requestsData, employeesData, leaveTypesData] = await Promise.all([
-    getLeaveRequests().catch(() => ({ rows: [] })),
-    getEmployees().catch(() => ({ rows: [] })),
-    getLeaveTypes().catch(() => ({ rows: [] })),
-  ]);
+  const result = await safeParallel(
+    () => getLeaveRequests(),
+    () => getEmployees(),
+    () => getLeaveTypes(),
+  );
 
+  if (!result.ok) {
+    if (result.isTokenError) redirect("/api/auth/login");
+    return <ErrorState />;
+  }
+
+  const [requestsData, employeesData, leaveTypesData] = result.results;
   const requests: LeaveRequest[] = requestsData.rows || [];
   const employees: Employee[] = employeesData.rows || [];
   const leaveTypes: LeaveType[] = leaveTypesData.rows || [];

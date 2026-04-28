@@ -3,19 +3,31 @@ import { LeaveRequest, Employee, LeaveType } from "@/lib/types";
 import { getHolidays, LEGAL_LEAVE_POLICIES } from "@/lib/holidays";
 import { CalendarView } from "@/components/calendar/calendar-view";
 import { Scale } from "lucide-react";
+import { redirect } from "next/navigation";
+import { safeParallel } from "@/lib/safe-fetch";
+import { ErrorState } from "@/components/error-state";
 
 export default async function CalendarPage() {
   const currentYear = new Date().getFullYear();
 
-  const [requestsData, employeesData, leaveTypesData, holidaysCurrent, holidaysNext, holidaysPrev] =
-    await Promise.all([
-      getLeaveRequests().catch(() => ({ rows: [] })),
-      getEmployees().catch(() => ({ rows: [] })),
-      getLeaveTypes().catch(() => ({ rows: [] })),
-      getHolidays(currentYear),
-      getHolidays(currentYear + 1),
-      getHolidays(currentYear - 1),
-    ]);
+  const result = await safeParallel(
+    () => getLeaveRequests(),
+    () => getEmployees(),
+    () => getLeaveTypes(),
+  );
+
+  if (!result.ok) {
+    if (result.isTokenError) redirect("/api/auth/login");
+    return <ErrorState />;
+  }
+
+  const [requestsData, employeesData, leaveTypesData] = result.results;
+
+  const [holidaysPrev, holidaysCurrent, holidaysNext] = await Promise.all([
+    getHolidays(currentYear - 1).catch(() => []),
+    getHolidays(currentYear).catch(() => []),
+    getHolidays(currentYear + 1).catch(() => []),
+  ]);
   const holidays = [...holidaysPrev, ...holidaysCurrent, ...holidaysNext];
 
   const requests: LeaveRequest[] = (requestsData.rows || []).filter(

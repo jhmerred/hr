@@ -52,9 +52,11 @@ const navGroups = [
 export function Sidebar({
   userName,
   userEmail,
+  onNavigate,
 }: {
   userName: string;
   userEmail: string;
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
 
@@ -89,6 +91,7 @@ export function Sidebar({
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={onNavigate}
                   className={cn(
                     "group flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive

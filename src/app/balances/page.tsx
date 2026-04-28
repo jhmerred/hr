@@ -1,14 +1,23 @@
 import { getLeaveBalances, getEmployees, getLeaveTypes } from "@/lib/api";
 import { LeaveBalance, Employee, LeaveType } from "@/lib/types";
 import { BalanceOverview } from "@/components/leave/balance-overview";
+import { redirect } from "next/navigation";
+import { safeParallel } from "@/lib/safe-fetch";
+import { ErrorState } from "@/components/error-state";
 
 export default async function BalancesPage() {
-  const [balancesData, employeesData, leaveTypesData] = await Promise.all([
-    getLeaveBalances().catch(() => ({ rows: [] })),
-    getEmployees().catch(() => ({ rows: [] })),
-    getLeaveTypes().catch(() => ({ rows: [] })),
-  ]);
+  const result = await safeParallel(
+    () => getLeaveBalances(),
+    () => getEmployees(),
+    () => getLeaveTypes(),
+  );
 
+  if (!result.ok) {
+    if (result.isTokenError) redirect("/api/auth/login");
+    return <ErrorState />;
+  }
+
+  const [balancesData, employeesData, leaveTypesData] = result.results;
   const balances: LeaveBalance[] = balancesData.rows || [];
   const employees: Employee[] = employeesData.rows || [];
   const leaveTypes: LeaveType[] = leaveTypesData.rows || [];

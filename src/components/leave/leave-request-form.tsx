@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Employee, LeaveType, LeaveBalance } from "@/lib/types";
-import { Holiday, calcBusinessDays, isHolidaySync, isWeekend } from "@/lib/holidays";
+import { Holiday, calcBusinessDays, isHolidaySync, isWeekend, formatLocalDate, todayStr } from "@/lib/holidays";
 import { createLeaveRequestAction } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import {
@@ -53,7 +53,7 @@ export function LeaveRequestForm({
     return calcBusinessDays(startDate, endDate, holidays);
   }, [startDate, endDate, halfDay, holidays]);
 
-  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const todayString = useMemo(() => todayStr(), []);
   const currentYear = new Date().getFullYear();
   const remaining = useMemo(() => {
     if (!employeeId || !leaveTypeId) return null;
@@ -81,7 +81,7 @@ export function LeaveRequestForm({
     const cur = new Date(s);
     while (cur <= e) {
       total++;
-      const ds = cur.toISOString().split("T")[0];
+      const ds = formatLocalDate(cur);
       if (isWeekend(ds)) weekends++;
       else {
         const h = isHolidaySync(ds, holidays);
@@ -113,7 +113,7 @@ export function LeaveRequestForm({
     // 이전 달 패딩
     for (let i = startPad - 1; i >= 0; i--) {
       const d = new Date(calYear, calMonth, -i);
-      const ds = d.toISOString().split("T")[0];
+      const ds = formatLocalDate(d);
       result.push({
         date: ds,
         day: d.getDate(),
@@ -127,7 +127,7 @@ export function LeaveRequestForm({
       });
     }
 
-    const todayDate = new Date().toISOString().split("T")[0];
+    const todayDate = todayStr();
 
     // 이번 달
     for (let d = 1; d <= last.getDate(); d++) {
@@ -152,7 +152,7 @@ export function LeaveRequestForm({
     const remaining = 42 - result.length;
     for (let i = 1; i <= remaining; i++) {
       const d = new Date(calYear, calMonth + 1, i);
-      const ds = d.toISOString().split("T")[0];
+      const ds = formatLocalDate(d);
       result.push({
         date: ds,
         day: d.getDate(),
@@ -392,7 +392,7 @@ export function LeaveRequestForm({
             {calendarDays.map((d, i) => {
               const isOff = d.isWeekend || !!d.holiday;
               const isSelected = d.isStart || d.isEnd;
-              const isPast = d.date < todayStr;
+              const isPast = d.date < todayString;
 
               return (
                 <button

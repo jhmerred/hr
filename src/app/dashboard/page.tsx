@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
+import { formatLocalDate } from "@/lib/holidays";
 
 const avatarColors = [
   "avatar-blue",
@@ -63,8 +64,8 @@ export default async function DashboardPage() {
   monday.setDate(today.getDate() + mondayOffset);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
-  const weekStart = monday.toISOString().split("T")[0];
-  const weekEnd = sunday.toISOString().split("T")[0];
+  const weekStart = formatLocalDate(monday);
+  const weekEnd = formatLocalDate(sunday);
 
   let thisWeekAttendance = attendance.filter((a: { date: string }) => {
     return a.date >= weekStart && a.date <= weekEnd;

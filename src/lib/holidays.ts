@@ -126,8 +126,20 @@ export function isHolidaySync(
   return holidays.find((h) => h.date === date);
 }
 
+// UTC가 아닌 로컬 타임존 기준 날짜 문자열 (YYYY-MM-DD)
+export function formatLocalDate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function todayStr(): string {
+  return formatLocalDate(new Date());
+}
+
 export function isWeekend(date: string): boolean {
-  const d = new Date(date);
+  const d = new Date(date + "T00:00:00");
   return d.getDay() === 0 || d.getDay() === 6;
 }
 
@@ -142,12 +154,12 @@ export function calcBusinessDays(
   holidays: Holiday[] = []
 ): number {
   if (!start || !end) return 0;
-  const s = new Date(start);
-  const e = new Date(end);
+  const s = new Date(start + "T00:00:00");
+  const e = new Date(end + "T00:00:00");
   let count = 0;
   const cur = new Date(s);
   while (cur <= e) {
-    const dateStr = cur.toISOString().split("T")[0];
+    const dateStr = formatLocalDate(cur);
     if (isWorkday(dateStr, holidays)) count++;
     cur.setDate(cur.getDate() + 1);
   }
@@ -170,7 +182,7 @@ export function getMonthCalendar(
   month: number,
   holidays: Holiday[]
 ): CalendarDay[] {
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayStr();
   const holidayMap = new Map(holidays.map((h) => [h.date, h]));
 
   const firstDay = new Date(year, month, 1);
@@ -186,7 +198,7 @@ export function getMonthCalendar(
   const cur = new Date(startDate);
 
   while (cur <= endDate) {
-    const dateStr = cur.toISOString().split("T")[0];
+    const dateStr = formatLocalDate(cur);
     days.push({
       date: dateStr,
       day: cur.getDate(),

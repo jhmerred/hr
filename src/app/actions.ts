@@ -198,7 +198,10 @@ export async function initializeBalancesAction(year: number) {
 // Attendance
 export async function clockInAction(employeeId: string) {
   const now = new Date();
-  const date = now.toISOString().split("T")[0];
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const date = `${y}-${m}-${d}`;
   const time = now.toTimeString().slice(0, 5);
   const isLate = time > "09:00";
 

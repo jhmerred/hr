@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Holiday, getMonthCalendar } from "@/lib/holidays";
+import { Holiday, getMonthCalendar, formatLocalDate } from "@/lib/holidays";
 import { LeaveRequest, Employee, LeaveType } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -35,7 +35,7 @@ export function CalendarView({
       const end = new Date(r.end_date);
       const cur = new Date(start);
       while (cur <= end) {
-        const dateStr = cur.toISOString().split("T")[0];
+        const dateStr = formatLocalDate(cur);
         const arr = map.get(dateStr) || [];
         arr.push(r);
         map.set(dateStr, arr);

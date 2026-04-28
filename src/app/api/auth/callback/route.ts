@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
   // 토큰을 HTTP-only 쿠키에 저장
   const appUrl = process.env.APPHUB_APP_SLUG
-    ? `https://jocodingax-ai-${process.env.APPHUB_APP_SLUG}.jocodingax.ai`
+    ? `https://${process.env.APPHUB_APP_SLUG}.jocodingax.ai`
     : request.headers.get("x-forwarded-host")
     ? `https://${request.headers.get("x-forwarded-host")}`
     : request.url;

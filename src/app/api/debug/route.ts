@@ -1,86 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  // SSO 프록시가 주입하는 헤더 확인
-  const headers: Record<string, string> = {};
-  request.headers.forEach((value, key) => {
-    // 민감 정보 마스킹
-    if (key.toLowerCase().includes("cookie")) {
-      headers[key] = value.substring(0, 30) + "...(masked)";
-    } else {
-      headers[key] = value;
+  // 모든 APPHUB 관련 환경변수 (전체 값)
+  const apphubVars: Record<string, string> = {};
+  const dbVars: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!value) continue;
+    if (key.startsWith("APPHUB")) {
+      // API_KEY는 앞 20자만
+      apphubVars[key] = key.includes("KEY") ? value.substring(0, 20) + "..." : value;
     }
-  });
-
-  // 환경변수 확인
-  const apiKey = process.env.APPHUB_API_KEY || "";
-  const dataBaseUrl = process.env.APPHUB_DATA_BASE_URL || "";
-  const slug = process.env.APPHUB_APP_SLUG || "";
-
-  // SSO 토큰으로 Gateway 호출 시도
-  // SSO 프록시가 x-apphub-token 같은 헤더를 주입할 수 있음
-  const ssoToken = request.headers.get("x-apphub-token")
-    || request.headers.get("x-forwarded-access-token")
-    || request.headers.get("x-auth-request-access-token")
-    || request.headers.get("authorization")
-    || "";
-
-  let gatewayTest = null;
-  if (dataBaseUrl) {
-    // 시스템 키로 시도
-    try {
-      const res = await fetch(`${dataBaseUrl}/${slug}/employees`, {
-        headers: { "X-Api-Key": apiKey, "X-App-Key": apiKey },
-      });
-      gatewayTest = {
-        url: `${dataBaseUrl}/${slug}/employees`,
-        method: "system-key",
-        status: res.status,
-        body: (await res.text()).substring(0, 200)
-      };
-    } catch (e) {
-      gatewayTest = { error: String(e) };
-    }
-
-    // SSO 토큰으로 시도
-    if (ssoToken && (!gatewayTest || gatewayTest.status !== 200)) {
-      try {
-        const res = await fetch(`${dataBaseUrl}/${slug}/employees`, {
-          headers: { "Authorization": `Bearer ${ssoToken}` },
-        });
-        gatewayTest = {
-          url: `${dataBaseUrl}/${slug}/employees`,
-          method: "sso-token",
-          status: res.status,
-          body: (await res.text()).substring(0, 200)
-        };
-      } catch (e) {
-        gatewayTest = { error: String(e) };
-      }
-    }
-
-    // 쿠키 forwarding으로 시도
-    const cookie = request.headers.get("cookie") || "";
-    if (cookie && (!gatewayTest || gatewayTest.status !== 200)) {
-      try {
-        const res = await fetch(`${dataBaseUrl}/${slug}/employees`, {
-          headers: { "Cookie": cookie },
-        });
-        gatewayTest = {
-          url: `${dataBaseUrl}/${slug}/employees`,
-          method: "cookie-forward",
-          status: res.status,
-          body: (await res.text()).substring(0, 300)
-        };
-      } catch (e) {
-        gatewayTest = { error: String(e) };
-      }
+    if (key.includes("DATABASE") || key.includes("DB_") || key.includes("PG") || key.includes("POSTGRES") || key.includes("REDIS") || key.includes("MONGO")) {
+      dbVars[key] = value.substring(0, 30) + "...";
     }
   }
 
-  return NextResponse.json({
-    headers,
-    ssoToken: ssoToken ? ssoToken.substring(0, 20) + "..." : "(none)",
-    gatewayTest,
+  // SSO 프록시 주입 헤더
+  const ssoHeaders: Record<string, string> = {};
+  request.headers.forEach((value, key) => {
+    if (key.startsWith("x-") || key === "authorization" || key === "cookie") {
+      ssoHeaders[key] = key === "cookie" ? value.substring(0, 50) + "..." : value;
+    }
   });
+
+  // 쿠키로 Gateway 접근 시도
+  const cookie = request.headers.get("cookie") || "";
+  let cookieGatewayTest = null;
+  if (cookie) {
+    try {
+      const res = await fetch("https://hub-api.jocodingax.ai/gw/hr/employees", {
+        headers: { "Cookie": cookie },
+        redirect: "manual",
+      });
+      const body = await res.text();
+      cookieGatewayTest = { status: res.status, body: body.substring(0, 300) };
+    } catch (e) {
+      cookieGatewayTest = { error: String(e) };
+    }
+  }
+
+  return NextResponse.json({ apphubVars, dbVars, ssoHeaders, cookieGatewayTest });
 }

@@ -153,16 +153,21 @@ export default async function EmployeeDetailPage({
         </div>
         <div className="px-6 py-4">
           {requests.length === 0 ? (
-            <p className="text-sm text-gray-400 py-4 text-center">
-              휴가 신청 기록이 없습니다
-            </p>
+            <div className="py-10 text-center">
+              <p className="text-sm text-gray-400">휴가 신청 기록이 없습니다</p>
+              <Link href="/leave/new" className="text-xs text-blue-600 hover:underline mt-1 inline-block">
+                휴가 신청하기
+              </Link>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-200">
+                    <th className="text-left py-2">유형</th>
                     <th className="text-left py-2">기간</th>
-                    <th className="text-left py-2">일수</th>
+                    <th className="text-center py-2">일수</th>
+                    <th className="text-left py-2">사유</th>
                     <th className="text-left py-2">상태</th>
                   </tr>
                 </thead>
@@ -174,9 +179,14 @@ export default async function EmployeeDetailPage({
                     return (
                       <tr
                         key={r.id}
-                        className="border-b border-gray-50 last:border-0"
+                        className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
                       >
-                        <td className="py-2">
+                        <td className="py-2.5">
+                          <span className="text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
+                            {ltMap.get(r.leave_type_id) || "-"}
+                          </span>
+                        </td>
+                        <td className="py-2.5">
                           <Link
                             href={`/leave/${r.id}`}
                             className="text-sm text-blue-600 hover:underline"
@@ -184,10 +194,13 @@ export default async function EmployeeDetailPage({
                             {r.start_date} ~ {r.end_date}
                           </Link>
                         </td>
-                        <td className="py-2 text-sm text-gray-600">
+                        <td className="py-2.5 text-center text-sm font-semibold text-gray-800">
                           {r.days}일
                         </td>
-                        <td className="py-2">
+                        <td className="py-2.5 text-xs text-gray-500 max-w-[150px] truncate">
+                          {r.reason || "-"}
+                        </td>
+                        <td className="py-2.5">
                           <span
                             className={`text-xs px-2 py-0.5 rounded border font-semibold ${st.cls}`}
                           >

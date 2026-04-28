@@ -1,17 +1,14 @@
-import { getEmployee, getDepartments, getLeaveBalances, getLeaveRequests } from "@/lib/api";
+import {
+  getEmployee,
+  getDepartments,
+  getLeaveBalances,
+  getLeaveRequests,
+} from "@/lib/api";
 import { Department, LeaveBalance, LeaveRequest } from "@/lib/types";
 import { EmployeeForm } from "@/components/employees/employee-form";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { LEAVE_STATUS_STYLES } from "@/lib/constants";
 
 export default async function EmployeeDetailPage({
   params,
@@ -37,117 +34,136 @@ export default async function EmployeeDetailPage({
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-3xl font-bold">직원 상세</h1>
-        <p className="text-muted-foreground mt-1">{employee.name}</p>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/employees"
+          className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 text-gray-600" />
+        </Link>
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">직원 상세</h1>
+          <p className="text-sm text-gray-500">{employee.name || ""}</p>
+        </div>
       </div>
 
       <EmployeeForm departments={departments} employee={employee} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{currentYear}년 잔여 휴가</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* 잔여 휴가 */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-bold text-gray-900">
+            {currentYear}년 잔여 휴가
+          </h2>
+        </div>
+        <div className="px-6 py-4">
           {currentBalances.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400 py-4 text-center">
               잔여 휴가 데이터가 없습니다.{" "}
-              <Link href="/balances" className="text-primary hover:underline">
+              <Link href="/balances" className="text-blue-600 hover:underline">
                 잔여 휴가 페이지
               </Link>
               에서 초기화해 주세요.
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>휴가 유형</TableHead>
-                  <TableHead>총 일수</TableHead>
-                  <TableHead>사용</TableHead>
-                  <TableHead>잔여</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <table className="w-full">
+              <thead>
+                <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-200">
+                  <th className="text-left py-2">휴가 유형</th>
+                  <th className="text-left py-2">총 일수</th>
+                  <th className="text-left py-2">사용</th>
+                  <th className="text-left py-2">잔여</th>
+                </tr>
+              </thead>
+              <tbody>
                 {currentBalances.map((b) => (
-                  <TableRow key={b.id}>
-                    <TableCell className="font-medium">
+                  <tr
+                    key={b.id}
+                    className="border-b border-gray-50 last:border-0"
+                  >
+                    <td className="py-2 text-sm text-gray-700">
                       {b.leave_type_id}
-                    </TableCell>
-                    <TableCell>{b.total_days}</TableCell>
-                    <TableCell>{b.used_days}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          b.remaining_days <= 3 ? "destructive" : "default"
-                        }
+                    </td>
+                    <td className="py-2 text-sm text-gray-600">
+                      {b.total_days}
+                    </td>
+                    <td className="py-2 text-sm text-gray-600">
+                      {b.used_days}
+                    </td>
+                    <td className="py-2">
+                      <span
+                        className={`text-sm font-bold ${
+                          b.remaining_days <= 3
+                            ? "text-red-600"
+                            : "text-gray-900"
+                        }`}
                       >
                         {b.remaining_days}일
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
+                      </span>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>최근 휴가 신청</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* 최근 휴가 신청 */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-bold text-gray-900">최근 휴가 신청</h2>
+        </div>
+        <div className="px-6 py-4">
           {requests.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400 py-4 text-center">
               휴가 신청 기록이 없습니다
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>기간</TableHead>
-                  <TableHead>일수</TableHead>
-                  <TableHead>상태</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {requests.slice(0, 10).map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell>
-                      <Link
-                        href={`/leave/${r.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {r.start_date} ~ {r.end_date}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{r.days}일</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          r.status === "approved"
-                            ? "default"
-                            : r.status === "rejected"
-                            ? "destructive"
-                            : "outline"
-                        }
-                      >
-                        {r.status === "pending"
-                          ? "대기"
-                          : r.status === "approved"
-                          ? "승인"
-                          : r.status === "rejected"
-                          ? "반려"
-                          : "취소"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <table className="w-full">
+              <thead>
+                <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-200">
+                  <th className="text-left py-2">기간</th>
+                  <th className="text-left py-2">일수</th>
+                  <th className="text-left py-2">상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requests.slice(0, 10).map((r) => {
+                  const st =
+                    LEAVE_STATUS_STYLES[r.status] ||
+                    LEAVE_STATUS_STYLES.pending;
+                  return (
+                    <tr
+                      key={r.id}
+                      className="border-b border-gray-50 last:border-0"
+                    >
+                      <td className="py-2">
+                        <Link
+                          href={`/leave/${r.id}`}
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          {r.start_date} ~ {r.end_date}
+                        </Link>
+                      </td>
+                      <td className="py-2 text-sm text-gray-600">
+                        {r.days}일
+                      </td>
+                      <td className="py-2">
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded border font-semibold ${st.cls}`}
+                        >
+                          {st.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -61,7 +61,14 @@ async function query(table: string, filters?: Record<string, unknown>) {
 }
 
 async function getById(table: string, id: string) {
-  return mcpCall("records", { table_name: table, action: "query", id });
+  const result = await mcpCall("records", {
+    table_name: table,
+    action: "query",
+    filters: { id },
+  });
+  // query 결과에서 단건 추출
+  if (result?.rows?.length > 0) return result.rows[0];
+  return result;
 }
 
 async function insert(table: string, data: Record<string, unknown>) {

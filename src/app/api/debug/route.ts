@@ -41,7 +41,7 @@ export async function GET() {
       const res = await fetch(`${API_BASE}/oauth/token`, {
         method: "POST",
         headers,
-        body: new URLSearchParams(attempt.body as Record<string, string>),
+        body: new URLSearchParams(attempt.body as unknown as Record<string, string>),
       });
       const text = await res.text();
       results.push({

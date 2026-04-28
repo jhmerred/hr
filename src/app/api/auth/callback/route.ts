@@ -5,8 +5,8 @@ export async function GET(request: NextRequest) {
   const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "";
   const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || "";
   const REDIRECT_URI = process.env.APPHUB_APP_SLUG
-    ? `https://jocodingax-ai-${process.env.APPHUB_APP_SLUG}.jocodingax.ai/api/auth/callback`
-    : "https://jocodingax-ai-hr.jocodingax.ai/api/auth/callback";
+    ? `https://${process.env.APPHUB_APP_SLUG}.jocodingax.ai/api/auth/callback`
+    : "https://hr.jocodingax.ai/api/auth/callback";
 
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");

@@ -5,8 +5,8 @@ export async function GET() {
   const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
   const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "";
   const REDIRECT_URI = process.env.APPHUB_APP_SLUG
-    ? `https://jocodingax-ai-${process.env.APPHUB_APP_SLUG}.jocodingax.ai/api/auth/callback`
-    : "https://jocodingax-ai-hr.jocodingax.ai/api/auth/callback";
+    ? `https://${process.env.APPHUB_APP_SLUG}.jocodingax.ai/api/auth/callback`
+    : "https://hr.jocodingax.ai/api/auth/callback";
 
   // PKCE
   const codeVerifier = crypto.randomBytes(32).toString("base64url");

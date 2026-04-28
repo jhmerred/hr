@@ -1,80 +1,70 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-  const apiKey = process.env.APPHUB_API_KEY || "";
-  const dataBaseUrl = process.env.APPHUB_DATA_BASE_URL || "";
-  const slug = process.env.APPHUB_APP_SLUG || "";
+export async function GET() {
+  const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
+  const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "(not set)";
+  const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || "(not set)";
 
-  // SSO 프록시가 주입하는 모든 헤더
-  const allHeaders: Record<string, string> = {};
-  request.headers.forEach((value, key) => {
-    if (key === "cookie") {
-      // 쿠키 이름만 추출
-      allHeaders[key] = value.split(";").map(c => c.trim().split("=")[0]).join(", ");
-    } else {
-      allHeaders[key] = value.length > 100 ? value.substring(0, 100) + "..." : value;
+  // 1. OAuth 토큰 발급 시도
+  let tokenResult: Record<string, unknown> = {};
+  let accessToken = "";
+  try {
+    const res = await fetch(`${API_BASE}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        scope: "read write",
+        resource: `${API_BASE}/mcp`,
+      }),
+    });
+    const text = await res.text();
+    tokenResult = { status: res.status, body: text.substring(0, 500) };
+    if (res.ok) {
+      const data = JSON.parse(text);
+      accessToken = data.access_token || "";
+      tokenResult.tokenPrefix = accessToken.substring(0, 20) + "...";
     }
+  } catch (e) {
+    tokenResult = { error: String(e) };
+  }
+
+  // 2. 토큰으로 MCP 호출 시도
+  let mcpResult: Record<string, unknown> = {};
+  if (accessToken) {
+    try {
+      const res = await fetch(`${API_BASE}/mcp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          method: "tools/call",
+          params: {
+            name: "records",
+            arguments: { app_slug: "hr", table_name: "employees", action: "query", per: 1 },
+          },
+          id: 1,
+        }),
+      });
+      const text = await res.text();
+      mcpResult = { status: res.status, body: text.substring(0, 500) };
+    } catch (e) {
+      mcpResult = { error: String(e) };
+    }
+  }
+
+  return NextResponse.json({
+    env: {
+      API_BASE,
+      CLIENT_ID: CLIENT_ID.substring(0, 10) + "...",
+      CLIENT_SECRET_SET: CLIENT_SECRET !== "(not set)",
+    },
+    tokenResult,
+    mcpResult,
   });
-
-  // 모든 가능한 인증 방법으로 Gateway 호출 시도
-  const results: Record<string, unknown>[] = [];
-  const testUrl = `${dataBaseUrl}/${slug}/employees`;
-  const cookie = request.headers.get("cookie") || "";
-
-  // 1. 시스템 API 키
-  try {
-    const r = await fetch(testUrl, {
-      headers: { "X-Api-Key": apiKey },
-      redirect: "manual",
-    });
-    results.push({ method: "X-Api-Key", status: r.status, body: (await r.text()).substring(0, 200) });
-  } catch (e) { results.push({ method: "X-Api-Key", error: String(e) }); }
-
-  // 2. 쿠키 포워딩
-  if (cookie) {
-    try {
-      const r = await fetch(testUrl, {
-        headers: { "Cookie": cookie },
-        redirect: "manual",
-      });
-      results.push({ method: "Cookie", status: r.status, body: (await r.text()).substring(0, 200) });
-    } catch (e) { results.push({ method: "Cookie", error: String(e) }); }
-  }
-
-  // 3. X-Api-Key + Cookie 조합
-  if (cookie) {
-    try {
-      const r = await fetch(testUrl, {
-        headers: { "X-Api-Key": apiKey, "Cookie": cookie },
-        redirect: "manual",
-      });
-      results.push({ method: "ApiKey+Cookie", status: r.status, body: (await r.text()).substring(0, 200) });
-    } catch (e) { results.push({ method: "ApiKey+Cookie", error: String(e) }); }
-  }
-
-  // 4. Authorization Bearer with API key
-  try {
-    const r = await fetch(testUrl, {
-      headers: { "Authorization": `Bearer ${apiKey}` },
-      redirect: "manual",
-    });
-    results.push({ method: "Bearer", status: r.status, body: (await r.text()).substring(0, 200) });
-  } catch (e) { results.push({ method: "Bearer", error: String(e) }); }
-
-  // 5. apphub 내부 서비스 URL 시도 (K8s 내부 통신)
-  const internalUrls = [
-    `http://apphub-sso/gw/${slug}/employees`,
-    `http://apphub-sso.default.svc.cluster.local/gw/${slug}/employees`,
-  ];
-  for (const iUrl of internalUrls) {
-    try {
-      const r = await fetch(iUrl, {
-        headers: { "X-Api-Key": apiKey },
-        signal: AbortSignal.timeout(3000),
-      });
-      results.push({ method: `internal:${iUrl}`, status: r.status, body: (await r.text()).substring(0, 200) });
-    } catch (e) { results.push({ method: `internal:${iUrl}`, error: String(e).substring(0, 100) }); }
-  }
-
-  return NextResponse.json({ testUrl, allHeaders, results });
 }

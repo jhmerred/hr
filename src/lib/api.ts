@@ -1,30 +1,56 @@
-import { cookies } from "next/headers";
-
 const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
 const APP_SLUG = process.env.APPHUB_APP_SLUG || "hr";
+const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "";
+const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || "";
+
+// OAuth 토큰 캐시
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
+async function getOAuthToken(): Promise<string> {
+  // 캐시된 토큰이 유효하면 재사용
+  if (cachedToken && Date.now() < cachedToken.expiresAt - 60000) {
+    return cachedToken.token;
+  }
+
+  // Client Credentials 방식으로 토큰 발급
+  const res = await fetch(`${API_BASE}/oauth/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      scope: "read write",
+      resource: `${API_BASE}/mcp`,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`[oauth] token error ${res.status}: ${text.substring(0, 200)}`);
+    throw new Error(`OAuth token error ${res.status}`);
+  }
+
+  const data = await res.json();
+  cachedToken = {
+    token: data.access_token,
+    expiresAt: Date.now() + (data.expires_in || 3600) * 1000,
+  };
+  return cachedToken.token;
+}
 
 let reqId = 0;
 
-async function getSSOCookie(): Promise<string> {
-  try {
-    const store = await cookies();
-    const sso = store.get("_apphub_sso");
-    return sso ? `_apphub_sso=${sso.value}` : "";
-  } catch {
-    return "";
-  }
-}
-
-// MCP JSON-RPC를 SSO 쿠키로 인증하여 호출
+// MCP JSON-RPC 호출 (OAuth Bearer 인증)
 async function mcpCall(toolName: string, args: Record<string, unknown>) {
-  const ssoCookie = await getSSOCookie();
+  const token = await getOAuthToken();
   reqId++;
 
   const res = await fetch(`${API_BASE}/mcp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(ssoCookie ? { Cookie: ssoCookie } : {}),
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       jsonrpc: "2.0",
@@ -43,22 +69,19 @@ async function mcpCall(toolName: string, args: Record<string, unknown>) {
 
   const json = await res.json();
   if (json.error) {
-    console.error(`[mcp] rpc error: ${json.error.message}`);
+    console.error(`[mcp] error: ${json.error.message}`);
     throw new Error(json.error.message);
   }
 
-  // MCP tool result: { content: [{ type: "text", text: "..." }] }
   const text = json.result?.content?.[0]?.text;
   if (text) return JSON.parse(text);
   return json.result;
 }
 
-// Records CRUD via MCP
-async function query(table: string, filters?: Record<string, unknown>, sort?: string) {
-  const args: Record<string, unknown> = { table_name: table, action: "query" };
+// Records CRUD
+async function query(table: string, filters?: Record<string, unknown>) {
+  const args: Record<string, unknown> = { table_name: table, action: "query", per: 100 };
   if (filters) args.filters = filters;
-  if (sort) args.sort = sort;
-  args.per = 100;
   return mcpCall("records", args);
 }
 
@@ -80,38 +103,32 @@ async function remove(table: string, id: string) {
 
 // === Public API ===
 
-// Departments
 export const getDepartments = () => query("departments");
 export const getDepartment = (id: string) => getById("departments", id);
 export const createDepartment = (data: Record<string, unknown>) => insert("departments", data);
 export const updateDepartment = (id: string, data: Record<string, unknown>) => update("departments", id, data);
 export const deleteDepartment = (id: string) => remove("departments", id);
 
-// Employees
 export const getEmployees = (params?: Record<string, string>) => query("employees", params);
 export const getEmployee = (id: string) => getById("employees", id);
 export const createEmployee = (data: Record<string, unknown>) => insert("employees", data);
 export const updateEmployee = (id: string, data: Record<string, unknown>) => update("employees", id, data);
 export const deleteEmployee = (id: string) => remove("employees", id);
 
-// Leave Types
 export const getLeaveTypes = () => query("leave_types");
 export const createLeaveType = (data: Record<string, unknown>) => insert("leave_types", data);
 export const updateLeaveType = (id: string, data: Record<string, unknown>) => update("leave_types", id, data);
 export const deleteLeaveType = (id: string) => remove("leave_types", id);
 
-// Leave Balances
 export const getLeaveBalances = (params?: Record<string, string>) => query("leave_balances", params);
 export const createLeaveBalance = (data: Record<string, unknown>) => insert("leave_balances", data);
 export const updateLeaveBalance = (id: string, data: Record<string, unknown>) => update("leave_balances", id, data);
 
-// Leave Requests
 export const getLeaveRequests = (params?: Record<string, string>) => query("leave_requests", params);
 export const getLeaveRequest = (id: string) => getById("leave_requests", id);
 export const createLeaveRequest = (data: Record<string, unknown>) => insert("leave_requests", data);
 export const updateLeaveRequest = (id: string, data: Record<string, unknown>) => update("leave_requests", id, data);
 
-// Attendance Records
 export const getAttendanceRecords = (params?: Record<string, string>) => query("attendance_records", params);
 export const createAttendanceRecord = (data: Record<string, unknown>) => insert("attendance_records", data);
 export const updateAttendanceRecord = (id: string, data: Record<string, unknown>) => update("attendance_records", id, data);

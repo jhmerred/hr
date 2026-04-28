@@ -3,8 +3,9 @@ import {
   getDepartments,
   getLeaveBalances,
   getLeaveRequests,
+  getLeaveTypes,
 } from "@/lib/api";
-import { Department, LeaveBalance, LeaveRequest } from "@/lib/types";
+import { Department, LeaveBalance, LeaveRequest, LeaveType } from "@/lib/types";
 import { EmployeeForm } from "@/components/employees/employee-form";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +26,7 @@ export default async function EmployeeDetailPage({
     () => getDepartments(),
     () => getLeaveBalances({ employee_id: id }),
     () => getLeaveRequests({ employee_id: id }),
+    () => getLeaveTypes(),
   );
 
   if (!result.ok) {
@@ -32,10 +34,12 @@ export default async function EmployeeDetailPage({
     return <ErrorState />;
   }
 
-  const [employee, departmentsData, balancesData, requestsData] = result.results;
+  const [employee, departmentsData, balancesData, requestsData, leaveTypesData] = result.results;
   const departments: Department[] = departmentsData.rows || [];
   const balances: LeaveBalance[] = balancesData.rows || [];
   const requests: LeaveRequest[] = requestsData.rows || [];
+  const leaveTypes: LeaveType[] = leaveTypesData.rows || [];
+  const ltMap = new Map(leaveTypes.map((lt: LeaveType) => [lt.id, lt.name]));
 
   const currentYear = new Date().getFullYear();
   const currentBalances = balances.filter((b) => b.year === currentYear);
@@ -79,9 +83,10 @@ export default async function EmployeeDetailPage({
                 <thead>
                   <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-200">
                     <th className="text-left py-2">휴가 유형</th>
-                    <th className="text-left py-2">총 일수</th>
-                    <th className="text-left py-2">사용</th>
-                    <th className="text-left py-2">잔여</th>
+                    <th className="text-center py-2">총 일수</th>
+                    <th className="text-center py-2">사용</th>
+                    <th className="text-center py-2">잔여</th>
+                    <th className="text-left py-2 w-28">소진율</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -90,25 +95,47 @@ export default async function EmployeeDetailPage({
                       key={b.id}
                       className="border-b border-gray-50 last:border-0"
                     >
-                      <td className="py-2 text-sm text-gray-700">
-                        {b.leave_type_id}
-                      </td>
-                      <td className="py-2 text-sm text-gray-600">
-                        {b.total_days}
-                      </td>
-                      <td className="py-2 text-sm text-gray-600">
-                        {b.used_days}
-                      </td>
                       <td className="py-2">
+                        <span className="text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
+                          {ltMap.get(b.leave_type_id) || b.leave_type_id}
+                        </span>
+                      </td>
+                      <td className="py-2.5 text-center text-sm text-gray-600">
+                        {b.total_days}일
+                      </td>
+                      <td className="py-2.5 text-center text-sm text-gray-600">
+                        {b.used_days}일
+                      </td>
+                      <td className="py-2.5 text-center">
                         <span
                           className={`text-sm font-bold ${
-                            b.remaining_days <= 3
+                            b.remaining_days <= 3 && b.remaining_days > 0
+                              ? "text-amber-600"
+                              : b.remaining_days === 0
                               ? "text-red-600"
                               : "text-gray-900"
                           }`}
                         >
                           {b.remaining_days}일
                         </span>
+                      </td>
+                      <td className="py-2.5">
+                        {(() => {
+                          const pct = b.total_days > 0 ? Math.round((b.used_days / b.total_days) * 100) : 0;
+                          return (
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full ${
+                                    pct >= 80 ? "bg-red-500" : pct >= 50 ? "bg-amber-400" : "bg-blue-500"
+                                  }`}
+                                  style={{ width: `${Math.min(pct, 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-gray-400 w-7 text-right">{pct}%</span>
+                            </div>
+                          );
+                        })()}
                       </td>
                     </tr>
                   ))}

@@ -47,10 +47,10 @@ function FormField({
 }
 
 const inputCls =
-  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300";
+  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all placeholder:text-gray-300";
 
 const selectCls =
-  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all appearance-none";
+  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all appearance-none";
 
 export function EmployeeForm({
   departments,
@@ -241,7 +241,7 @@ export function EmployeeForm({
         <button
           type="submit"
           disabled={submitting}
-          className="flex-1 h-12 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          className="flex-1 h-12 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {submitting ? (
             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

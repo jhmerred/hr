@@ -47,14 +47,14 @@ export function EmployeeTable({
             placeholder="이름, 이메일, 직책 검색..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none placeholder:text-gray-300"
+            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none placeholder:text-gray-300"
           />
         </div>
         <div className="relative">
           <select
             value={deptFilter}
             onChange={(e) => setDeptFilter(e.target.value)}
-            className="border border-gray-200 rounded-lg pl-3 pr-8 py-2.5 text-sm bg-white appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none"
+            className="border border-gray-200 rounded-lg pl-3 pr-8 py-2.5 text-sm bg-white appearance-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none"
           >
             <option value="">전체 부서</option>
             {departments.map((d) => (
@@ -88,7 +88,7 @@ export function EmployeeTable({
             {!search && !deptFilter && (
               <Link
                 href="/employees/new"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-800 transition-colors"
               >
                 <UserPlus className="h-3.5 w-3.5" />
                 직원 등록

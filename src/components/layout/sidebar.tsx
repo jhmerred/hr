@@ -65,7 +65,7 @@ export function Sidebar({
       {/* Logo */}
       <div className="h-[60px] flex items-center px-5 border-b border-gray-200">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
             <span className="text-white font-bold text-sm">H</span>
           </div>
           <span className="text-sm font-bold tracking-tight text-gray-900">
@@ -95,7 +95,7 @@ export function Sidebar({
                   className={cn(
                     "group flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-blue-50 text-blue-700"
+                      ? "bg-gray-900 text-white"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   )}
                 >
@@ -103,14 +103,14 @@ export function Sidebar({
                     className={cn(
                       "h-4 w-4 transition-colors",
                       isActive
-                        ? "text-blue-600"
+                        ? "text-white"
                         : "text-gray-400 group-hover:text-gray-600"
                     )}
                     strokeWidth={isActive ? 2 : 1.8}
                   />
                   <span className="flex-1">{item.label}</span>
                   {isActive && (
-                    <ChevronRight className="h-3.5 w-3.5 text-blue-400" />
+                    <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
                   )}
                 </Link>
               );

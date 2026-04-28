@@ -84,7 +84,7 @@ export default async function CalendarPage() {
                     <span
                       className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
                         policy.category === "법정"
-                          ? "bg-blue-50 text-blue-700 border border-blue-200"
+                          ? "bg-gray-100 text-gray-700 border border-gray-200"
                           : "bg-gray-50 text-gray-600 border border-gray-200"
                       }`}
                     >
@@ -101,7 +101,7 @@ export default async function CalendarPage() {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs font-semibold text-blue-600 mb-1.5">
+                <p className="text-xs font-semibold text-gray-800 mb-1.5">
                   {policy.days}
                 </p>
                 <p className="text-xs text-gray-500 leading-relaxed">

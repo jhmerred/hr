@@ -213,14 +213,14 @@ export default async function DashboardPage() {
             <h2 className="text-sm font-bold text-gray-900">
               승인 대기 중
               {pendingRequests.length > 0 && (
-                <span className="ml-2 text-xs font-semibold text-white bg-blue-600 rounded-full px-2 py-0.5">
+                <span className="ml-2 text-xs font-semibold text-white bg-gray-900 rounded-full px-2 py-0.5">
                   {pendingRequests.length}
                 </span>
               )}
             </h2>
             <Link
               href="/leave"
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+              className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-0.5"
             >
               전체 보기 <ArrowRight className="h-3 w-3" />
             </Link>
@@ -288,7 +288,7 @@ export default async function DashboardPage() {
             <h2 className="text-sm font-bold text-gray-900">부서별 인원</h2>
             <Link
               href="/organization"
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+              className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-0.5"
             >
               조직도 <ArrowRight className="h-3 w-3" />
             </Link>
@@ -326,7 +326,7 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-bold text-gray-900">최근 근태</h2>
           <Link
             href="/attendance"
-            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+            className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-0.5"
           >
             전체 보기 <ArrowRight className="h-3 w-3" />
           </Link>

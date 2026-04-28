@@ -4,9 +4,10 @@ export async function GET(request: NextRequest) {
   const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
   const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "";
   const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET || "";
-  const REDIRECT_URI = process.env.APPHUB_APP_SLUG
-    ? `https://${process.env.APPHUB_APP_SLUG}.jocodingax.ai/api/auth/callback`
-    : "https://hr.jocodingax.ai/api/auth/callback";
+  const REDIRECT_URI = process.env.OAUTH_REDIRECT_URI
+    || (process.env.APPHUB_APP_SLUG
+      ? `https://${process.env.APPHUB_APP_SLUG}.jocodingax.ai/api/auth/callback`
+      : "https://hr.jocodingax.ai/api/auth/callback");
 
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
@@ -43,7 +44,9 @@ export async function GET(request: NextRequest) {
   const tokenData = await tokenRes.json();
 
   // 토큰을 HTTP-only 쿠키에 저장
-  const appUrl = process.env.APPHUB_APP_SLUG
+  const appUrl = process.env.OAUTH_REDIRECT_URI
+    ? process.env.OAUTH_REDIRECT_URI.replace("/api/auth/callback", "")
+    : process.env.APPHUB_APP_SLUG
     ? `https://${process.env.APPHUB_APP_SLUG}.jocodingax.ai`
     : request.headers.get("x-forwarded-host")
     ? `https://${request.headers.get("x-forwarded-host")}`

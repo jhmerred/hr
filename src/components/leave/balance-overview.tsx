@@ -60,7 +60,7 @@ export function BalanceOverview({
           <select
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
-            className="border border-gray-200 rounded-lg pl-3 pr-8 py-2.5 text-sm bg-white font-semibold appearance-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none"
+            className="border border-gray-200 rounded-lg pl-3 pr-8 py-2.5 text-sm bg-white font-semibold appearance-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none"
           >
             {[currentYear - 1, currentYear, currentYear + 1].map((y) => (
               <option key={y} value={y}>{y}년</option>
@@ -79,7 +79,7 @@ export function BalanceOverview({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="직원, 유형 검색..."
-            className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none placeholder:text-gray-300"
+            className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none placeholder:text-gray-300"
           />
         </div>
 
@@ -116,7 +116,7 @@ export function BalanceOverview({
             <button
               onClick={handleInitialize}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               {year}년 초기화

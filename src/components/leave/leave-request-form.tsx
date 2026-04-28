@@ -252,7 +252,7 @@ export function LeaveRequestForm({
             <select
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all appearance-none"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all appearance-none"
             >
               <option value="">직원을 선택하세요</option>
               {employees.map((emp) => (
@@ -279,7 +279,7 @@ export function LeaveRequestForm({
             <select
               value={leaveTypeId}
               onChange={(e) => setLeaveTypeId(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all appearance-none"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all appearance-none"
             >
               <option value="">유형을 선택하세요</option>
               {leaveTypes.map((lt) => (
@@ -305,7 +305,7 @@ export function LeaveRequestForm({
               className={`mt-3 flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-semibold ${
                 remaining <= 3
                   ? "bg-red-50 text-red-700 border border-red-200"
-                  : "bg-blue-50 text-blue-700 border border-blue-200"
+                  : "bg-gray-100 text-gray-800 border border-gray-300"
               }`}
             >
               <span>잔여 일수</span>
@@ -341,13 +341,13 @@ export function LeaveRequestForm({
                 }}
                 className={`px-3 py-3 rounded-lg text-center border transition-all ${
                   halfDay === opt.value
-                    ? "border-blue-500 bg-blue-50"
+                    ? "border-gray-900 bg-gray-50"
                     : "border-gray-200 bg-white hover:border-gray-300"
                 }`}
               >
                 <p
                   className={`text-sm font-semibold ${
-                    halfDay === opt.value ? "text-blue-700" : "text-gray-700"
+                    halfDay === opt.value ? "text-gray-900" : "text-gray-700"
                   }`}
                 >
                   {opt.label}
@@ -367,7 +367,7 @@ export function LeaveRequestForm({
               {halfDay ? "날짜 선택" : selectingEnd && startDate ? "종료일을 선택하세요" : "시작일을 선택하세요"}
             </p>
             {startDate && (
-              <p className="text-xs text-blue-600 font-medium">
+              <p className="text-xs text-gray-700 font-medium">
                 {startDate}
                 {endDate && endDate !== startDate && ` ~ ${endDate}`}
               </p>
@@ -433,8 +433,8 @@ export function LeaveRequestForm({
                     ${!d.inMonth ? "text-gray-200 cursor-default" : ""}
                     ${isPast && d.inMonth ? "text-gray-300 cursor-not-allowed" : ""}
                     ${d.inMonth && !isPast && !isSelected && !d.inRange ? "hover:bg-gray-50 cursor-pointer" : ""}
-                    ${d.inRange && !isSelected ? "bg-blue-50" : ""}
-                    ${isSelected ? "bg-blue-600 text-white rounded-lg z-10" : ""}
+                    ${d.inRange && !isSelected ? "bg-gray-50" : ""}
+                    ${isSelected ? "bg-gray-900 text-white rounded-lg z-10" : ""}
                     ${d.isToday && !isSelected ? "font-bold" : ""}
                   `}
                 >
@@ -469,11 +469,11 @@ export function LeaveRequestForm({
               주말
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <span className="w-4 h-2 rounded bg-blue-600" />
+              <span className="w-4 h-2 rounded bg-gray-900" />
               선택
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <span className="w-4 h-2 rounded bg-blue-50 border border-blue-100" />
+              <span className="w-4 h-2 rounded bg-gray-100 border border-gray-200" />
               범위
             </div>
           </div>
@@ -487,7 +487,7 @@ export function LeaveRequestForm({
             <span className="text-sm font-semibold text-gray-800">
               사용 일수
             </span>
-            <span className="text-2xl font-bold text-blue-600">
+            <span className="text-2xl font-bold text-gray-900">
               {halfDay ? "0.5" : days}
               <span className="text-sm text-gray-400 ml-0.5">일</span>
             </span>
@@ -551,7 +551,7 @@ export function LeaveRequestForm({
             onChange={(e) => setReason(e.target.value)}
             placeholder="휴가 사유를 입력해 주세요"
             rows={3}
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm resize-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
+            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm resize-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all"
           />
         </div>
 
@@ -568,7 +568,7 @@ export function LeaveRequestForm({
             onClick={handleSubmit}
             className={`flex-1 h-12 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
               canSubmit
-                ? "bg-blue-600 text-white hover:bg-blue-700"
+                ? "bg-gray-900 text-white hover:bg-gray-800"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"
             }`}
           >

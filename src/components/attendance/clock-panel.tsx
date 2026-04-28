@@ -73,8 +73,8 @@ export function ClockPanel({
         className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
-            <Clock className="h-4 w-4 text-blue-600" />
+          <div className="w-9 h-9 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+            <Clock className="h-4 w-4 text-gray-700" />
           </div>
           <div className="text-left">
             <h2 className="text-sm font-bold text-gray-900">오늘의 출퇴근</h2>
@@ -109,7 +109,7 @@ export function ClockPanel({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="이름 또는 직책으로 검색..."
-                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none bg-gray-50/50 placeholder:text-gray-300"
+                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none bg-gray-50/50 placeholder:text-gray-300"
               />
             </div>
           </div>
@@ -179,7 +179,7 @@ export function ClockPanel({
                       <button
                         onClick={() => handleClockIn(emp.id)}
                         disabled={isLoading}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gray-900 text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
                       >
                         {isLoading ? (
                           <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />

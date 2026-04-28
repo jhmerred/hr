@@ -4,9 +4,10 @@ import crypto from "crypto";
 export async function GET() {
   const API_BASE = process.env.APPHUB_API_URL || "https://hub-api.jocodingax.ai";
   const CLIENT_ID = process.env.OAUTH_CLIENT_ID || "";
-  const REDIRECT_URI = process.env.APPHUB_APP_SLUG
-    ? `https://${process.env.APPHUB_APP_SLUG}.jocodingax.ai/api/auth/callback`
-    : "https://hr.jocodingax.ai/api/auth/callback";
+  const REDIRECT_URI = process.env.OAUTH_REDIRECT_URI
+    || (process.env.APPHUB_APP_SLUG
+      ? `https://${process.env.APPHUB_APP_SLUG}.jocodingax.ai/api/auth/callback`
+      : "https://hr.jocodingax.ai/api/auth/callback");
 
   // PKCE
   const codeVerifier = crypto.randomBytes(32).toString("base64url");

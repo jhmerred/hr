@@ -26,7 +26,7 @@ import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 const inputCls =
-  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300";
+  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all placeholder:text-gray-300";
 
 export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
   const [open, setOpen] = useState(false);
@@ -46,8 +46,8 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
           >
             <div className="flex items-center justify-between px-5 py-4">
               <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                  <CalendarDays className="h-5 w-5 text-blue-500" />
+                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                  <CalendarDays className="h-5 w-5 text-gray-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -118,10 +118,10 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
             setEditItem(null);
             setOpen(true);
           }}
-          className="w-full border-2 border-dashed border-gray-200 rounded-lg py-5 flex items-center justify-center gap-2 hover:border-blue-300 hover:bg-blue-50/30 transition-all group"
+          className="w-full border-2 border-dashed border-gray-200 rounded-lg py-5 flex items-center justify-center gap-2 hover:border-gray-300 hover:bg-gray-50 transition-all group"
         >
-          <Plus className="h-4 w-4 text-gray-400 group-hover:text-blue-500" />
-          <span className="text-sm font-medium text-gray-400 group-hover:text-blue-600">
+          <Plus className="h-4 w-4 text-gray-400 group-hover:text-gray-500" />
+          <span className="text-sm font-medium text-gray-400 group-hover:text-gray-700">
             새 휴가 유형 추가
           </span>
         </button>
@@ -194,7 +194,7 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
-                className="flex-1 h-11 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                className="flex-1 h-11 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
               >
                 <Save className="h-4 w-4" />
                 {editItem ? "변경사항 저장" : "유형 추가"}

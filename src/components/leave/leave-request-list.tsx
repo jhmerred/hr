@@ -164,7 +164,7 @@ export function LeaveRequestList({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="직원, 유형, 사유 검색..."
-          className="w-full max-w-sm pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none bg-white"
+          className="w-full max-w-sm pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none bg-white"
         />
       </div>
 

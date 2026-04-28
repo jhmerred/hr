@@ -4,7 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { getAuthUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "Orbit HR",
+  title: "HR",
   description: "직원 및 휴가 관리 시스템",
   icons: {
     icon: "/orbit-logo.svg",

@@ -77,7 +77,7 @@ export function Sidebar({
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <img src="/orbit-logo.svg" alt="Orbit" className="w-8 h-8 rounded-lg" />
           <span className="text-sm font-bold tracking-tight text-gray-900">
-            Orbit HR
+            HR
           </span>
         </Link>
       </div>

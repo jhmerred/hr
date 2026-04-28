@@ -43,7 +43,12 @@ export async function GET(request: NextRequest) {
   const tokenData = await tokenRes.json();
 
   // 토큰을 HTTP-only 쿠키에 저장
-  const res = NextResponse.redirect(new URL("/dashboard", request.url));
+  const appUrl = process.env.APPHUB_APP_SLUG
+    ? `https://jocodingax-ai-${process.env.APPHUB_APP_SLUG}.jocodingax.ai`
+    : request.headers.get("x-forwarded-host")
+    ? `https://${request.headers.get("x-forwarded-host")}`
+    : request.url;
+  const res = NextResponse.redirect(new URL("/dashboard", appUrl));
   res.cookies.set("_mcp_token", tokenData.access_token, {
     httpOnly: true,
     secure: true,

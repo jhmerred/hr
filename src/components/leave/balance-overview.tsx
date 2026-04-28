@@ -5,6 +5,7 @@ import { LeaveBalance, Employee, LeaveType } from "@/lib/types";
 import { RefreshCw, Search, Palmtree } from "lucide-react";
 import { initializeBalancesAction } from "@/app/actions";
 import { getInitial } from "@/lib/constants";
+import { useToast } from "@/components/toast";
 
 export function BalanceOverview({
   balances,
@@ -19,6 +20,7 @@ export function BalanceOverview({
   const [year, setYear] = useState(currentYear);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const toast = useToast();
 
   const empMap = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
   const ltMap = useMemo(() => new Map(leaveTypes.map((lt) => [lt.id, lt.name])), [leaveTypes]);
@@ -42,6 +44,7 @@ export function BalanceOverview({
     setLoading(true);
     await initializeBalancesAction(year);
     setLoading(false);
+    toast.success(`${year}년 잔여 휴가가 초기화되었습니다`);
   };
 
   // Summary stats

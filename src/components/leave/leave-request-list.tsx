@@ -20,6 +20,7 @@ import {
   cancelLeaveRequestAction,
 } from "@/app/actions";
 import { LEAVE_STATUS_STYLES, getInitial } from "@/lib/constants";
+import { useToast } from "@/components/toast";
 
 export function LeaveRequestList({
   requests,
@@ -32,6 +33,7 @@ export function LeaveRequestList({
 }) {
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const toast = useToast();
 
   const empMap = new Map(employees.map((e) => [e.id, e]));
   const ltMap = new Map(leaveTypes.map((lt) => [lt.id, lt.name]));
@@ -119,6 +121,7 @@ export function LeaveRequestList({
                             onClick={async () => {
                               if (confirm("승인하시겠습니까?")) {
                                 await approveLeaveRequestAction(req.id);
+                                toast.success("휴가가 승인되었습니다");
                               }
                             }}
                           >
@@ -143,6 +146,7 @@ export function LeaveRequestList({
                               : "이 휴가 신청을 취소하시겠습니까?";
                             if (confirm(msg)) {
                               await cancelLeaveRequestAction(req.id);
+                              toast.success("휴가가 취소되었습니다");
                             }
                           }}
                         >
@@ -220,6 +224,7 @@ export function LeaveRequestList({
               if (rejectId) {
                 await rejectLeaveRequestAction(rejectId, formData);
                 setRejectId(null);
+                toast.success("휴가가 반려되었습니다");
               }
             }}
             className="space-y-4"

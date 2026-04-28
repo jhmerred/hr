@@ -6,6 +6,7 @@ import { Trash2, Search, ChevronRight, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { deleteEmployeeAction } from "@/app/actions";
 import { EMPLOYEE_STATUS_STYLES, getInitial } from "@/lib/constants";
+import { useToast } from "@/components/toast";
 
 export function EmployeeTable({
   employees,
@@ -17,6 +18,7 @@ export function EmployeeTable({
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const toast = useToast();
 
   const deptMap = useMemo(() => new Map(departments.map((d) => [d.id, d.name])), [departments]);
 
@@ -156,6 +158,7 @@ export function EmployeeTable({
                                 setDeleting(emp.id);
                                 await deleteEmployeeAction(emp.id);
                                 setDeleting(null);
+                                toast.success(`${emp.name}님이 삭제되었습니다`);
                               }
                             }}
                             disabled={isDeleting}

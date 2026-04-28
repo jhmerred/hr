@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Department, Employee } from "@/lib/types";
 import { createEmployeeAction, updateEmployeeAction } from "@/app/actions";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/toast";
 import {
   User,
   Mail,
@@ -59,6 +60,7 @@ export function EmployeeForm({
   employee?: Employee;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [submitting, setSubmitting] = useState(false);
   const isEdit = !!employee;
 
@@ -69,11 +71,14 @@ export function EmployeeForm({
         try {
           if (employee) {
             await updateEmployeeAction(employee.id, formData);
+            toast.success("직원 정보가 수정되었습니다");
           } else {
             await createEmployeeAction(formData);
+            toast.success("새 직원이 등록되었습니다");
           }
           router.push("/employees");
         } catch {
+          toast.error("처리 중 오류가 발생했습니다");
           setSubmitting(false);
         }
       }}

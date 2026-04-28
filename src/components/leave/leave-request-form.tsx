@@ -5,6 +5,7 @@ import { Employee, LeaveType, LeaveBalance } from "@/lib/types";
 import { Holiday, calcBusinessDays, isHolidaySync, isWeekend, formatLocalDate, todayStr } from "@/lib/holidays";
 import { createLeaveRequestAction } from "@/app/actions";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/toast";
 import {
   ChevronLeft,
   ChevronRight,
@@ -39,6 +40,7 @@ export function LeaveRequestForm({
   currentUserEmail?: string;
 }) {
   const router = useRouter();
+  const toast = useToast();
 
   // Auto-select employee by email match
   const matchedEmployee = currentUserEmail
@@ -217,8 +219,10 @@ export function LeaveRequestForm({
       formData.set("days", String(days));
       formData.set("reason", reason);
       await createLeaveRequestAction(formData);
+      toast.success("휴가가 신청되었습니다");
       router.push("/leave");
     } catch {
+      toast.error("휴가 신청에 실패했습니다");
       setError("휴가 신청에 실패했습니다. 다시 시도해 주세요.");
       setSubmitting(false);
     }

@@ -22,6 +22,7 @@ import {
   updateLeaveTypeAction,
   deleteLeaveTypeAction,
 } from "@/app/actions";
+import { useToast } from "@/components/toast";
 
 const inputCls =
   "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300";
@@ -30,6 +31,7 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<LeaveType | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const toast = useToast();
 
   return (
     <div>
@@ -98,6 +100,7 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                         setDeleting(lt.id);
                         await deleteLeaveTypeAction(lt.id);
                         setDeleting(null);
+                        toast.success("휴가 유형이 삭제되었습니다");
                       }
                     }}
                     disabled={deleting === lt.id}
@@ -144,8 +147,10 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
             action={async (formData) => {
               if (editItem) {
                 await updateLeaveTypeAction(editItem.id, formData);
+                toast.success("휴가 유형이 수정되었습니다");
               } else {
                 await createLeaveTypeAction(formData);
+                toast.success("새 휴가 유형이 추가되었습니다");
               }
               setOpen(false);
               setEditItem(null);

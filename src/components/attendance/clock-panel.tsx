@@ -5,6 +5,7 @@ import { Employee, AttendanceRecord } from "@/lib/types";
 import { clockInAction, clockOutAction } from "@/app/actions";
 import { LogIn, LogOut, Clock, Search, ChevronDown, ChevronUp } from "lucide-react";
 import { getInitial } from "@/lib/constants";
+import { useToast } from "@/components/toast";
 
 export function ClockPanel({
   employees,
@@ -16,6 +17,7 @@ export function ClockPanel({
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
+  const toast = useToast();
 
   const recordMap = useMemo(
     () => new Map(todayRecords.map((r) => [r.employee_id, r])),
@@ -42,18 +44,22 @@ export function ClockPanel({
   const notYet = activeEmployees.length - clockedIn - clockedOut;
 
   async function handleClockIn(employeeId: string) {
+    const emp = employees.find((e) => e.id === employeeId);
     setLoading(employeeId);
     try {
       await clockInAction(employeeId);
+      toast.success(`${emp?.name || ""}님 출근이 기록되었습니다`);
     } finally {
       setLoading(null);
     }
   }
 
   async function handleClockOut(record: AttendanceRecord) {
+    const emp = employees.find((e) => e.id === record.employee_id);
     setLoading(record.employee_id);
     try {
       await clockOutAction(record.id, record.clock_in);
+      toast.success(`${emp?.name || ""}님 퇴근이 기록되었습니다`);
     } finally {
       setLoading(null);
     }

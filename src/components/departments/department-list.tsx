@@ -22,6 +22,7 @@ import {
   updateDepartmentAction,
   deleteDepartmentAction,
 } from "@/app/actions";
+import { useToast } from "@/components/toast";
 
 const inputCls =
   "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300";
@@ -30,6 +31,7 @@ export function DepartmentList({ departments }: { departments: Department[] }) {
   const [open, setOpen] = useState(false);
   const [editDept, setEditDept] = useState<Department | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const toast = useToast();
 
   const colors = [
     "bg-blue-50 text-blue-600 border-blue-100",
@@ -100,6 +102,7 @@ export function DepartmentList({ departments }: { departments: Department[] }) {
                       setDeleting(dept.id);
                       await deleteDepartmentAction(dept.id);
                       setDeleting(null);
+                      toast.success("부서가 삭제되었습니다");
                     }
                   }}
                   disabled={deleting === dept.id}
@@ -147,8 +150,10 @@ export function DepartmentList({ departments }: { departments: Department[] }) {
             action={async (formData) => {
               if (editDept) {
                 await updateDepartmentAction(editDept.id, formData);
+                toast.success("부서가 수정되었습니다");
               } else {
                 await createDepartmentAction(formData);
+                toast.success("새 부서가 추가되었습니다");
               }
               setOpen(false);
               setEditDept(null);

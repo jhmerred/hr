@@ -11,6 +11,9 @@ import {
   AlertTriangle,
   Info,
   Check,
+  User,
+  CalendarDays as CalendarDaysIcon,
+  FileText,
 } from "lucide-react";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -236,39 +239,57 @@ export function LeaveRequestForm({
       {/* 1. 신청자 + 휴가 유형 */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-5">
         <div>
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
+          <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
+            <User className="h-3.5 w-3.5 text-gray-400" />
             신청자
+            <span className="text-red-400">*</span>
           </label>
-          <select
-            value={employeeId}
-            onChange={(e) => setEmployeeId(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
-          >
-            <option value="">직원을 선택하세요</option>
-            {employees.map((emp) => (
-              <option key={emp.id} value={emp.id}>
-                {emp.name} · {emp.position}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={employeeId}
+              onChange={(e) => setEmployeeId(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all appearance-none"
+            >
+              <option value="">직원을 선택하세요</option>
+              {employees.map((emp) => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.name} · {emp.position}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
+          <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
+            <CalendarDaysIcon className="h-3.5 w-3.5 text-gray-400" />
             휴가 유형
+            <span className="text-red-400">*</span>
           </label>
-          <select
-            value={leaveTypeId}
-            onChange={(e) => setLeaveTypeId(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all"
-          >
-            <option value="">유형을 선택하세요</option>
-            {leaveTypes.map((lt) => (
-              <option key={lt.id} value={lt.id}>
-                {lt.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={leaveTypeId}
+              onChange={(e) => setLeaveTypeId(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all appearance-none"
+            >
+              <option value="">유형을 선택하세요</option>
+              {leaveTypes.map((lt) => (
+                <option key={lt.id} value={lt.id}>
+                  {lt.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
           {selectedLeaveType && (
             <p className="mt-2 text-xs text-gray-400 flex items-start gap-1.5 leading-relaxed">
               <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-gray-300" />
@@ -291,7 +312,8 @@ export function LeaveRequestForm({
 
         {/* 반차 */}
         <div>
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
+          <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
+            <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             사용 단위
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -515,8 +537,10 @@ export function LeaveRequestForm({
       {/* 4. 사유 + 제출 */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-5">
         <div>
-          <label className="block text-sm font-semibold text-gray-800 mb-2">
+          <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
+            <FileText className="h-3.5 w-3.5 text-gray-400" />
             사유
+            <span className="text-red-400">*</span>
           </label>
           <textarea
             value={reason}

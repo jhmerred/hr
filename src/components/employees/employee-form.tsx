@@ -1,12 +1,55 @@
 "use client";
 
+import { useState } from "react";
 import { Department, Employee } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import { createEmployeeAction, updateEmployeeAction } from "@/app/actions";
 import { useRouter } from "next/navigation";
+import {
+  User,
+  Mail,
+  Phone,
+  Briefcase,
+  Calendar,
+  Building2,
+  Shield,
+  Save,
+  ArrowLeft,
+} from "lucide-react";
+import { EMPLOYEE_STATUS_STYLES } from "@/lib/constants";
+
+function FormField({
+  icon: Icon,
+  label,
+  required,
+  children,
+  description,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+  description?: string;
+}) {
+  return (
+    <div>
+      <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
+        <Icon className="h-3.5 w-3.5 text-gray-400" />
+        {label}
+        {required && <span className="text-red-400">*</span>}
+      </label>
+      {children}
+      {description && (
+        <p className="text-xs text-gray-400 mt-1.5">{description}</p>
+      )}
+    </div>
+  );
+}
+
+const inputCls =
+  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300";
+
+const selectCls =
+  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all appearance-none";
 
 export function EmployeeForm({
   departments,
@@ -16,124 +59,203 @@ export function EmployeeForm({
   employee?: Employee;
 }) {
   const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const isEdit = !!employee;
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <form
-          action={async (formData) => {
-            if (employee) {
-              await updateEmployeeAction(employee.id, formData);
-            } else {
-              await createEmployeeAction(formData);
-            }
-            router.push("/employees");
-          }}
-          className="space-y-4"
-        >
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="name">이름</Label>
-              <Input
-                id="name"
+    <form
+      action={async (formData) => {
+        setSubmitting(true);
+        try {
+          if (employee) {
+            await updateEmployeeAction(employee.id, formData);
+          } else {
+            await createEmployeeAction(formData);
+          }
+          router.push("/employees");
+        } catch {
+          setSubmitting(false);
+        }
+      }}
+    >
+      {/* 기본 정보 */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-bold text-gray-900">기본 정보</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            직원의 기본 인적사항을 입력합니다
+          </p>
+        </div>
+        <div className="px-6 py-5 space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <FormField icon={User} label="이름" required>
+              <input
                 name="name"
                 required
                 defaultValue={employee?.name || ""}
+                placeholder="홍길동"
+                className={inputCls}
               />
-            </div>
-            <div>
-              <Label htmlFor="email">이메일</Label>
-              <Input
-                id="email"
+            </FormField>
+            <FormField
+              icon={Mail}
+              label="이메일"
+              required
+              description="사내 이메일을 입력해 주세요"
+            >
+              <input
                 name="email"
                 type="email"
                 required
                 defaultValue={employee?.email || ""}
+                placeholder="gildong.hong@company.com"
+                className={inputCls}
               />
-            </div>
+            </FormField>
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="phone">전화번호</Label>
-              <Input
-                id="phone"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <FormField icon={Phone} label="전화번호">
+              <input
                 name="phone"
                 defaultValue={employee?.phone || ""}
+                placeholder="010-1234-5678"
+                className={inputCls}
               />
-            </div>
-            <div>
-              <Label htmlFor="position">직책</Label>
-              <Input
-                id="position"
+            </FormField>
+            <FormField icon={Briefcase} label="직책" required>
+              <input
                 name="position"
                 required
-                placeholder="사원, 대리, 과장, 부장..."
                 defaultValue={employee?.position || ""}
+                placeholder="사원, 대리, 과장, 부장..."
+                className={inputCls}
               />
-            </div>
+            </FormField>
           </div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="hire_date">입사일</Label>
-              <Input
-                id="hire_date"
+      {/* 근무 정보 */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mt-5">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-sm font-bold text-gray-900">근무 정보</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            소속 부서와 입사일을 설정합니다
+          </p>
+        </div>
+        <div className="px-6 py-5 space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <FormField
+              icon={Calendar}
+              label="입사일"
+              required
+              description="연차 자동 계산에 사용됩니다"
+            >
+              <input
                 name="hire_date"
                 type="date"
                 required
                 defaultValue={employee?.hire_date || ""}
+                className={inputCls}
               />
-            </div>
-            <div>
-              <Label htmlFor="department_id">부서</Label>
-              <select
-                id="department_id"
-                name="department_id"
-                required
-                defaultValue={employee?.department_id || ""}
-                className="w-full border rounded-md px-3 py-2 text-sm h-9"
-              >
-                <option value="">부서 선택</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
+            </FormField>
+            <FormField icon={Building2} label="부서" required>
+              <div className="relative">
+                <select
+                  name="department_id"
+                  required
+                  defaultValue={employee?.department_id || ""}
+                  className={selectCls}
+                >
+                  <option value="">부서를 선택하세요</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg
+                    className="h-4 w-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </FormField>
+          </div>
+
+          {isEdit && (
+            <FormField icon={Shield} label="재직 상태">
+              <div className="flex gap-2">
+                {(
+                  Object.entries(EMPLOYEE_STATUS_STYLES) as [
+                    string,
+                    { label: string; cls: string },
+                  ][]
+                ).map(([value, style]) => (
+                  <label key={value} className="flex-1">
+                    <input
+                      type="radio"
+                      name="status"
+                      value={value}
+                      defaultChecked={employee.status === value}
+                      className="peer sr-only"
+                    />
+                    <div
+                      className={`text-center px-3 py-3 rounded-lg border cursor-pointer transition-all peer-checked:ring-2 peer-checked:ring-blue-400 peer-checked:border-blue-400 hover:border-gray-300 ${
+                        employee.status === value
+                          ? "border-blue-400"
+                          : "border-gray-200"
+                      }`}
+                    >
+                      <span
+                        className={`text-xs font-semibold px-2 py-0.5 rounded border ${style.cls}`}
+                      >
+                        {style.label}
+                      </span>
+                    </div>
+                  </label>
                 ))}
-              </select>
-            </div>
-          </div>
-
-          {employee && (
-            <div>
-              <Label htmlFor="status">상태</Label>
-              <select
-                id="status"
-                name="status"
-                defaultValue={employee.status}
-                className="w-full border rounded-md px-3 py-2 text-sm h-9"
-              >
-                <option value="active">재직</option>
-                <option value="inactive">퇴직</option>
-                <option value="on_leave">휴직</option>
-              </select>
-            </div>
+              </div>
+            </FormField>
           )}
+        </div>
+      </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button type="submit" className="flex-1">
-              {employee ? "수정" : "등록"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-            >
-              취소
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+      {/* 버튼 */}
+      <div className="flex gap-3 mt-6">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="flex-1 h-12 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+        >
+          {submitting ? (
+            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              {isEdit ? "변경사항 저장" : "직원 등록"}
+            </>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="px-6 h-12 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          취소
+        </button>
+      </div>
+    </form>
   );
 }

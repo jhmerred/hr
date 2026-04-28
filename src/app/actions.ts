@@ -139,6 +139,36 @@ export async function rejectLeaveRequestAction(id: string, formData: FormData) {
   revalidatePath("/dashboard");
 }
 
+export async function cancelLeaveRequestAction(id: string) {
+  const request = await api.getLeaveRequest(id);
+
+  if (request.status === "approved") {
+    // 승인된 휴가 취소 시 잔여일수 복구
+    const balances = await api.getLeaveBalances({
+      employee_id: request.employee_id,
+      leave_type_id: request.leave_type_id,
+      year: String(new Date().getFullYear()),
+    });
+
+    if (balances.rows && balances.rows.length > 0) {
+      const balance = balances.rows[0];
+      await api.updateLeaveBalance(balance.id, {
+        used_days: Math.max(0, balance.used_days - request.days),
+        remaining_days: balance.remaining_days + request.days,
+      });
+    }
+  }
+
+  await api.updateLeaveRequest(id, {
+    status: "cancelled",
+    approved_at: new Date().toISOString(),
+  });
+
+  revalidatePath("/leave");
+  revalidatePath("/dashboard");
+  revalidatePath("/balances");
+}
+
 // 근속 기반 연차 일수 계산 (한국 근로기준법)
 function calcAnnualLeave(hireDate: string, year: number): number {
   const hire = new Date(hireDate);

@@ -13,10 +13,10 @@ import { createEmployeeAction } from "@/app/actions";
 import { useToast } from "@/components/toast";
 
 const inputCls =
-  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all placeholder:text-gray-300";
+  "w-full border border-gray-200 rounded-xl px-4 py-3.5 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all placeholder:text-gray-300";
 
 const selectCls =
-  "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all appearance-none";
+  "w-full border border-gray-200 rounded-xl px-4 py-3.5 text-sm bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none transition-all appearance-none";
 
 export function EmployeeCreateButton({ departments }: { departments: Department[] }) {
   const [open, setOpen] = useState(false);
@@ -34,7 +34,7 @@ export function EmployeeCreateButton({ departments }: { departments: Department[
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-4 w-4 text-gray-400" />
@@ -55,10 +55,10 @@ export function EmployeeCreateButton({ departments }: { departments: Department[
                 setSubmitting(false);
               }
             }}
-            className="space-y-4 pt-2"
+            className="space-y-5 pt-3"
           >
             {/* 기본 정보 */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-1 text-xs font-semibold text-gray-600 mb-1.5">
                   <User className="h-3 w-3 text-gray-400" />
@@ -75,7 +75,7 @@ export function EmployeeCreateButton({ departments }: { departments: Department[
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-1 text-xs font-semibold text-gray-600 mb-1.5">
                   <Phone className="h-3 w-3 text-gray-400" />
@@ -92,7 +92,7 @@ export function EmployeeCreateButton({ departments }: { departments: Department[
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-1 text-xs font-semibold text-gray-600 mb-1.5">
                   <Calendar className="h-3 w-3 text-gray-400" />

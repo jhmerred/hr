@@ -145,7 +145,7 @@ export function CalendarView({
                   key={i}
                   onClick={() => d.isCurrentMonth && setSelectedDate(d.date === selectedDate ? null : d.date)}
                   className={`
-                    min-h-[100px] p-2 text-left border-b border-r border-gray-100 transition-colors relative
+                    min-h-[110px] p-2 text-left border-b border-r border-gray-100 transition-colors relative
                     ${d.isCurrentMonth ? "bg-white hover:bg-gray-50" : "bg-gray-50/30"}
                     ${isSelected ? "bg-gray-100 ring-1 ring-gray-300 ring-inset" : ""}
                     ${d.isToday ? "bg-gray-50" : ""}
@@ -182,25 +182,25 @@ export function CalendarView({
 
                   {/* 휴가 dots */}
                   {d.isCurrentMonth && dayLeaves.length > 0 && (
-                    <div className="flex flex-wrap gap-0.5 mt-0.5">
-                      {dayLeaves.slice(0, 3).map((req, ri) => {
+                    <div className="flex flex-col gap-0.5 mt-0.5">
+                      {dayLeaves.slice(0, 2).map((req, ri) => {
                         const emp = empMap.get(req.employee_id);
                         return (
-                          <span
+                          <div
                             key={ri}
-                            className={`text-xs px-1.5 py-0.5 rounded truncate max-w-full block ${
+                            className={`text-xs px-1.5 py-0.5 rounded truncate ${
                               req.status === "approved"
-                                ? "bg-gray-200 text-gray-700"
-                                : "bg-amber-100 text-amber-700"
+                                ? "bg-gray-100 text-gray-600"
+                                : "bg-amber-50 text-amber-600"
                             }`}
                             title={`${emp?.name} - ${ltMap.get(req.leave_type_id) || ""}`}
                           >
-                            {emp?.name?.charAt(0)}{emp?.name?.charAt(1) || ""}
-                          </span>
+                            {emp?.name} {ltMap.get(req.leave_type_id)?.charAt(0) || ""}
+                          </div>
                         );
                       })}
-                      {dayLeaves.length > 3 && (
-                        <span className="text-xs text-gray-400">+{dayLeaves.length - 3}</span>
+                      {dayLeaves.length > 2 && (
+                        <span className="text-xs text-gray-400">+{dayLeaves.length - 2}</span>
                       )}
                     </div>
                   )}

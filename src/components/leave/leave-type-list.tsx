@@ -83,7 +83,7 @@ export function LeaveTypeList({ leaveTypes }: { leaveTypes: LeaveType[] }) {
 
                 <div className="w-px h-8 bg-gray-100" />
 
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-1">
                   <button
                     onClick={() => {
                       setEditItem(lt);

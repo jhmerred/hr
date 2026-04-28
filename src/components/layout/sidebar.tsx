@@ -75,11 +75,9 @@ export function Sidebar({
       {/* Logo */}
       <div className="h-[60px] flex items-center px-5 border-b border-gray-200">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">H</span>
-          </div>
+          <img src="/orbit-logo.svg" alt="Orbit" className="w-8 h-8 rounded-lg" />
           <span className="text-sm font-bold tracking-tight text-gray-900">
-            HR Manager
+            Orbit HR
           </span>
         </Link>
       </div>

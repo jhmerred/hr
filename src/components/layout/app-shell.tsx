@@ -25,7 +25,8 @@ export function AppShell({
         <button onClick={() => setSidebarOpen(true)} className="p-1">
           <Menu className="h-5 w-5 text-gray-600" />
         </button>
-        <span className="ml-3 font-bold text-sm text-gray-900">HR Manager</span>
+        <img src="/orbit-logo.svg" alt="Orbit" className="w-6 h-6 rounded ml-2" />
+        <span className="ml-2 font-bold text-sm text-gray-900">Orbit HR</span>
       </header>
 
       {/* Overlay */}

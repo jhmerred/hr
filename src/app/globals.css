@@ -152,32 +152,3 @@
 a, button, input, select, textarea {
   transition: all 0.15s ease;
 }
-
-/* Avatar colors */
-.avatar-blue { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1d4ed8; }
-.avatar-purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #6d28d9; }
-.avatar-green { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d; }
-.avatar-amber { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #b45309; }
-.avatar-rose { background: linear-gradient(135deg, #ffe4e6, #fecdd3); color: #be123c; }
-.avatar-cyan { background: linear-gradient(135deg, #cffafe, #a5f3fc); color: #0e7490; }
-
-/* Stat card hover */
-.stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.08);
-}
-
-/* Table row hover */
-.table-row-hover:hover {
-  background-color: #f8fafc;
-}
-
-/* Glass effect */
-.glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}

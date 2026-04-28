@@ -15,20 +15,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatLocalDate } from "@/lib/holidays";
-
-const avatarColors = [
-  "avatar-blue",
-  "avatar-purple",
-  "avatar-green",
-  "avatar-amber",
-  "avatar-rose",
-  "avatar-cyan",
-];
-function getAvatarColor(name: string) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return avatarColors[Math.abs(hash) % avatarColors.length];
-}
+import { getInitial } from "@/lib/constants";
+import { ATTENDANCE_STATUS_STYLES } from "@/lib/constants";
 
 export default async function DashboardPage() {
   const [employeesData, requestsData, departmentsData, attendanceData, balancesData] =
@@ -56,7 +44,6 @@ export default async function DashboardPage() {
     (r: { status: string }) => r.status === "approved"
   );
 
-  // 이번 주 월~일 범위 동적 계산
   const today = new Date();
   const dayOfWeek = today.getDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
@@ -70,7 +57,6 @@ export default async function DashboardPage() {
   let thisWeekAttendance = attendance.filter((a: { date: string }) => {
     return a.date >= weekStart && a.date <= weekEnd;
   });
-  // 이번 주 데이터 없으면 최근 데이터로 대체
   const recentAttendance = [...attendance]
     .sort((a: { date: string }, b: { date: string }) => b.date.localeCompare(a.date));
   if (thisWeekAttendance.length === 0) {
@@ -84,7 +70,6 @@ export default async function DashboardPage() {
     (a: { status: string }) => a.status === "late"
   ).length;
 
-  // 연차 소진율 (평균)
   const currentYear = today.getFullYear();
   const annualBalances = balances.filter(
     (b: { year: number }) => b.year === currentYear
@@ -113,13 +98,11 @@ export default async function DashboardPage() {
   const maxDeptCount = Math.max(...deptCounts.map((d: { count: number }) => d.count), 1);
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
-          대시보드
-        </h1>
-        <p className="text-[13px] text-gray-400 mt-1">
+        <h1 className="text-xl font-bold text-gray-900">대시보드</h1>
+        <p className="text-sm text-gray-500 mt-1">
           HR 현황을 한눈에 확인하세요. 오늘은{" "}
           {new Date().toLocaleDateString("ko-KR", {
             year: "numeric",
@@ -133,82 +116,82 @@ export default async function DashboardPage() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link href="/employees" className="stat-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 block">
+        <Link href="/employees" className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 block hover:border-gray-300 transition-colors">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 전체 직원
               </p>
-              <p className="text-[28px] font-bold text-gray-900 mt-1 leading-none">
+              <p className="text-2xl font-bold text-gray-900 mt-1 leading-none">
                 {activeEmployees.length}
-                <span className="text-[13px] font-normal text-gray-400 ml-0.5">명</span>
+                <span className="text-sm font-normal text-gray-400 ml-0.5">명</span>
               </p>
-              <p className="text-[11px] text-gray-400 mt-2">
+              <p className="text-xs text-gray-400 mt-2">
                 {departments.length}개 부서
               </p>
             </div>
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200">
-              <Users className="h-5 w-5 text-white" />
+            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <Users className="h-5 w-5 text-gray-500" />
             </div>
           </div>
         </Link>
 
-        <Link href="/leave" className="stat-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 block">
+        <Link href="/leave" className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 block hover:border-gray-300 transition-colors">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 대기 중 휴가
               </p>
-              <p className="text-[28px] font-bold text-gray-900 mt-1 leading-none">
+              <p className="text-2xl font-bold text-gray-900 mt-1 leading-none">
                 {pendingRequests.length}
-                <span className="text-[13px] font-normal text-gray-400 ml-0.5">건</span>
+                <span className="text-sm font-normal text-gray-400 ml-0.5">건</span>
               </p>
-              <p className="text-[11px] text-gray-400 mt-2">
+              <p className="text-xs text-gray-400 mt-2">
                 승인 {approvedRequests.length}건
               </p>
             </div>
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200">
-              <CalendarDays className="h-5 w-5 text-white" />
+            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <CalendarDays className="h-5 w-5 text-gray-500" />
             </div>
           </div>
         </Link>
 
-        <Link href="/attendance" className="stat-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 block">
+        <Link href="/attendance" className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 block hover:border-gray-300 transition-colors">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 주간 초과근무
               </p>
-              <p className="text-[28px] font-bold text-gray-900 mt-1 leading-none">
+              <p className="text-2xl font-bold text-gray-900 mt-1 leading-none">
                 {Math.round(totalOvertimeMin / 60)}
-                <span className="text-[13px] font-normal text-gray-400 ml-0.5">시간</span>
+                <span className="text-sm font-normal text-gray-400 ml-0.5">시간</span>
               </p>
-              <p className="text-[11px] text-red-400 mt-2">
+              <p className={`text-xs mt-2 ${lateCount > 0 ? "text-red-500" : "text-gray-400"}`}>
                 {lateCount > 0 ? `지각 ${lateCount}건` : "지각 없음"}
               </p>
             </div>
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg shadow-rose-200">
-              <TrendingUp className="h-5 w-5 text-white" />
+            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-gray-500" />
             </div>
           </div>
         </Link>
 
-        <Link href="/balances" className="stat-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 block">
+        <Link href="/balances" className="bg-white rounded-lg p-5 shadow-sm border border-gray-200 block hover:border-gray-300 transition-colors">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 연차 소진율
               </p>
-              <p className="text-[28px] font-bold text-gray-900 mt-1 leading-none">
+              <p className="text-2xl font-bold text-gray-900 mt-1 leading-none">
                 {avgUsageRate}
-                <span className="text-[13px] font-normal text-gray-400 ml-0.5">%</span>
+                <span className="text-sm font-normal text-gray-400 ml-0.5">%</span>
               </p>
-              <p className="text-[11px] text-gray-400 mt-2">
+              <p className="text-xs text-gray-400 mt-2">
                 {currentYear}년 평균
               </p>
             </div>
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-200">
-              <Clock className="h-5 w-5 text-white" />
+            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <Clock className="h-5 w-5 text-gray-500" />
             </div>
           </div>
         </Link>
@@ -216,19 +199,19 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         {/* 대기 중 휴가 (3/5) */}
-        <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="lg:col-span-3 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-[14px] font-bold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               승인 대기 중
               {pendingRequests.length > 0 && (
-                <span className="ml-2 text-[11px] font-semibold text-white bg-blue-500 rounded-full px-2 py-0.5">
+                <span className="ml-2 text-xs font-semibold text-white bg-blue-600 rounded-full px-2 py-0.5">
                   {pendingRequests.length}
                 </span>
               )}
             </h2>
             <Link
               href="/leave"
-              className="text-[12px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
             >
               전체 보기 <ArrowRight className="h-3 w-3" />
             </Link>
@@ -236,13 +219,13 @@ export default async function DashboardPage() {
           <div className="px-5 pb-4">
             {pendingRequests.length === 0 ? (
               <div className="py-10 text-center">
-                <CheckCircle2 className="h-10 w-10 text-green-200 mx-auto" />
-                <p className="text-[13px] text-gray-400 mt-3">
+                <CheckCircle2 className="h-10 w-10 text-gray-200 mx-auto" />
+                <p className="text-sm text-gray-400 mt-3">
                   대기 중인 신청이 없습니다
                 </p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {pendingRequests.slice(0, 5).map(
                   (req: {
                     id: string;
@@ -260,27 +243,25 @@ export default async function DashboardPage() {
                       <Link
                         key={req.id}
                         href={`/leave/${req.id}`}
-                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold ${getAvatarColor(empName)}`}
-                        >
-                          {empName.charAt(0)}
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+                          {getInitial(empName)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-[13px] font-semibold text-gray-800">
+                            <span className="text-sm font-semibold text-gray-800">
                               {empName}
                             </span>
-                            <span className="text-[11px] text-gray-400">
+                            <span className="text-xs text-gray-400">
                               {emp?.position}
                             </span>
                           </div>
-                          <p className="text-[11px] text-gray-400 mt-0.5">
+                          <p className="text-xs text-gray-400 mt-0.5">
                             {req.start_date} ~ {req.end_date} &middot; {req.days}일 &middot; {req.reason}
                           </p>
                         </div>
-                        <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1">
+                        <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-0.5">
                           대기
                         </span>
                       </Link>
@@ -293,12 +274,12 @@ export default async function DashboardPage() {
         </div>
 
         {/* 부서별 인원 (2/5) */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-[14px] font-bold text-gray-900">부서별 인원</h2>
+            <h2 className="text-sm font-bold text-gray-900">부서별 인원</h2>
             <Link
               href="/organization"
-              className="text-[12px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
             >
               조직도 <ArrowRight className="h-3 w-3" />
             </Link>
@@ -308,16 +289,16 @@ export default async function DashboardPage() {
               (dept: { name: string; count: number }, i: number) => (
                 <div key={i}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[12px] font-medium text-gray-600">
+                    <span className="text-xs font-medium text-gray-600">
                       {dept.name}
                     </span>
-                    <span className="text-[12px] font-bold text-gray-900">
+                    <span className="text-xs font-bold text-gray-900">
                       {dept.count}명
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 transition-all duration-500"
+                      className="h-full rounded-full bg-blue-500 transition-all duration-500"
                       style={{
                         width: `${(dept.count / maxDeptCount) * 100}%`,
                       }}
@@ -331,14 +312,12 @@ export default async function DashboardPage() {
       </div>
 
       {/* 근태 현황 */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <h2 className="text-[14px] font-bold text-gray-900">
-            최근 근태
-          </h2>
+          <h2 className="text-sm font-bold text-gray-900">최근 근태</h2>
           <Link
             href="/attendance"
-            className="text-[12px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
           >
             전체 보기 <ArrowRight className="h-3 w-3" />
           </Link>
@@ -346,7 +325,7 @@ export default async function DashboardPage() {
         <div className="px-5 pb-4 overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+              <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-200">
                 <th className="text-left py-2.5 pr-4">직원</th>
                 <th className="text-left py-2.5 pr-4">날짜</th>
                 <th className="text-left py-2.5 pr-4">출근</th>
@@ -377,55 +356,44 @@ export default async function DashboardPage() {
                       (e: { id: string }) => e.id === a.employee_id
                     );
                     const empName = emp?.name || "-";
-                    const statusMap: Record<
-                      string,
-                      { label: string; cls: string }
-                    > = {
-                      normal: { label: "정상", cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-                      late: { label: "지각", cls: "text-orange-700 bg-orange-50 border-orange-200" },
-                      overtime: { label: "초과", cls: "text-rose-700 bg-rose-50 border-rose-200" },
-                      leave: { label: "휴가", cls: "text-blue-700 bg-blue-50 border-blue-200" },
-                    };
-                    const st = statusMap[a.status] || statusMap.normal;
+                    const st = ATTENDANCE_STATUS_STYLES[a.status] || ATTENDANCE_STATUS_STYLES.normal;
                     return (
                       <tr
                         key={a.id}
-                        className="border-b border-gray-50 last:border-0 table-row-hover"
+                        className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"
                       >
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-2.5">
-                            <div
-                              className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${getAvatarColor(empName)}`}
-                            >
-                              {empName.charAt(0)}
+                            <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+                              {getInitial(empName)}
                             </div>
-                            <span className="text-[13px] font-medium text-gray-800">
+                            <span className="text-sm font-medium text-gray-800">
                               {empName}
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 pr-4 text-[12px] text-gray-500">
+                        <td className="py-3 pr-4 text-xs text-gray-500">
                           {a.date}
                         </td>
-                        <td className="py-3 pr-4 text-[13px] font-mono text-gray-700">
+                        <td className="py-3 pr-4 text-sm font-mono text-gray-700">
                           {a.clock_in || "-"}
                         </td>
-                        <td className="py-3 pr-4 text-[13px] font-mono text-gray-700">
+                        <td className="py-3 pr-4 text-sm font-mono text-gray-700">
                           {a.clock_out || "-"}
                         </td>
-                        <td className="py-3 pr-4 text-[12px] text-gray-500">
+                        <td className="py-3 pr-4 text-xs text-gray-500">
                           {a.work_minutes > 0
                             ? `${Math.floor(a.work_minutes / 60)}h ${a.work_minutes % 60}m`
                             : "-"}
                           {a.overtime_minutes > 0 && (
-                            <span className="text-rose-500 ml-1 font-medium">
+                            <span className="text-red-500 ml-1 font-medium">
                               (+{a.overtime_minutes}m)
                             </span>
                           )}
                         </td>
                         <td className="py-3">
                           <span
-                            className={`text-[11px] px-2 py-[3px] rounded-md border font-semibold ${st.cls}`}
+                            className={`text-xs px-2 py-0.5 rounded border font-semibold ${st.cls}`}
                           >
                             {st.label}
                           </span>

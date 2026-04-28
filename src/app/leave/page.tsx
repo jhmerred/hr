@@ -19,16 +19,16 @@ export default async function LeavePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+          <h1 className="text-xl font-bold text-gray-900">
             휴가 관리
           </h1>
-          <p className="text-[13px] text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             휴가 신청 및 승인을 관리합니다
           </p>
         </div>
         <Link
           href="/leave/new"
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-blue-200 hover:shadow-lg hover:shadow-blue-300 transition-all"
+          className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="h-4 w-4" />
           휴가 신청

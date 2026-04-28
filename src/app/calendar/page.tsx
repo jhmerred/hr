@@ -25,12 +25,12 @@ export default async function CalendarPage() {
   const leaveTypes: LeaveType[] = leaveTypesData.rows || [];
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+        <h1 className="text-xl font-bold text-gray-900">
           캘린더
         </h1>
-        <p className="text-[13px] text-gray-400 mt-1">
+        <p className="text-sm text-gray-500 mt-1">
           공휴일과 팀 휴가를 한눈에 확인합니다
         </p>
       </div>
@@ -43,16 +43,16 @@ export default async function CalendarPage() {
       />
 
       {/* 법정 휴가 제도 안내 */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-5 pt-5 pb-3 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
-            <Scale className="h-4 w-4 text-indigo-600" />
+          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+            <Scale className="h-4 w-4 text-gray-500" />
           </div>
           <div>
-            <h2 className="text-[14px] font-bold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900">
               한국 법정 휴가 제도
             </h2>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-xs text-gray-400">
               근로기준법 및 관련 법률에 따른 휴가 기준
             </p>
           </div>
@@ -62,15 +62,15 @@ export default async function CalendarPage() {
             {LEGAL_LEAVE_POLICIES.map((policy, i) => (
               <div
                 key={i}
-                className="border border-gray-100 rounded-xl p-4 hover:border-gray-200 transition-colors"
+                className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-[13px] font-bold text-gray-800">
+                  <h3 className="text-sm font-bold text-gray-800">
                     {policy.name}
                   </h3>
                   <div className="flex gap-1.5">
                     <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                      className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
                         policy.category === "법정"
                           ? "bg-blue-50 text-blue-700 border border-blue-200"
                           : "bg-gray-50 text-gray-600 border border-gray-200"
@@ -79,9 +79,9 @@ export default async function CalendarPage() {
                       {policy.category}
                     </span>
                     <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                      className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
                         policy.paid
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          ? "bg-green-50 text-green-700 border border-green-200"
                           : "bg-gray-50 text-gray-500 border border-gray-200"
                       }`}
                     >
@@ -89,10 +89,10 @@ export default async function CalendarPage() {
                     </span>
                   </div>
                 </div>
-                <p className="text-[12px] font-semibold text-indigo-600 mb-1.5">
+                <p className="text-xs font-semibold text-blue-600 mb-1.5">
                   {policy.days}
                 </p>
-                <p className="text-[11px] text-gray-500 leading-relaxed">
+                <p className="text-xs text-gray-500 leading-relaxed">
                   {policy.description}
                 </p>
               </div>

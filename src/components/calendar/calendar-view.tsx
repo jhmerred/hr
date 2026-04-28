@@ -27,7 +27,6 @@ export function CalendarView({
 
   const days = useMemo(() => getMonthCalendar(year, month, holidays), [year, month, holidays]);
 
-  // 각 날짜에 해당하는 휴가 신청
   const leaveByDate = useMemo(() => {
     const map = new Map<string, LeaveRequest[]>();
     requests.forEach((r) => {
@@ -54,13 +53,11 @@ export function CalendarView({
     setYear(y);
   };
 
-  // 이번 달 공휴일 요약
   const monthHolidays = holidays.filter((h) => {
     const d = new Date(h.date);
     return d.getFullYear() === year && d.getMonth() === month;
   });
 
-  // 이번 달 총 쉬는 날 (주말 + 공휴일, 중복 제거)
   const totalOffDays = days.filter(
     (d) => d.isCurrentMonth && (d.isWeekend || d.holiday)
   ).length;
@@ -71,8 +68,8 @@ export function CalendarView({
   return (
     <div className="space-y-4">
       {/* 월 이동 + 요약 */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <button
               onClick={() => goMonth(-1)}
@@ -80,7 +77,7 @@ export function CalendarView({
             >
               <ChevronLeft className="h-4 w-4 text-gray-600" />
             </button>
-            <h2 className="text-[16px] font-bold text-gray-900 min-w-[120px] text-center">
+            <h2 className="text-base font-bold text-gray-900 min-w-[120px] text-center">
               {year}년 {month + 1}월
             </h2>
             <button
@@ -90,12 +87,12 @@ export function CalendarView({
               <ChevronRight className="h-4 w-4 text-gray-600" />
             </button>
           </div>
-          <div className="flex items-center gap-4 text-[12px]">
+          <div className="flex items-center gap-4 text-xs">
             <span className="text-gray-500">
               근무일 <span className="font-bold text-gray-900">{totalWorkDays}</span>일
             </span>
             <span className="text-gray-500">
-              휴일 <span className="font-bold text-rose-500">{totalOffDays}</span>일
+              휴일 <span className="font-bold text-red-500">{totalOffDays}</span>일
             </span>
             <span className="text-gray-500">
               공휴일 <span className="font-bold text-red-500">{monthHolidays.length}</span>건
@@ -110,8 +107,8 @@ export function CalendarView({
             {WEEKDAYS.map((wd, i) => (
               <div
                 key={wd}
-                className={`text-center text-[11px] font-bold py-2 ${
-                  i === 0 ? "text-rose-400" : i === 6 ? "text-blue-400" : "text-gray-400"
+                className={`text-center text-xs font-semibold py-2 ${
+                  i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-gray-400"
                 }`}
               >
                 {wd}
@@ -120,7 +117,7 @@ export function CalendarView({
           </div>
 
           {/* 날짜 셀 */}
-          <div className="grid grid-cols-7 gap-px bg-gray-100 rounded-xl overflow-hidden">
+          <div className="grid grid-cols-7 gap-px bg-gray-100 rounded-lg overflow-hidden">
             {days.map((d, i) => {
               const dayLeaves = leaveByDate.get(d.date) || [];
               return (
@@ -132,13 +129,13 @@ export function CalendarView({
                 >
                   <div className="flex items-start justify-between mb-1">
                     <span
-                      className={`text-[12px] font-medium leading-none ${
+                      className={`text-xs font-medium leading-none ${
                         !d.isCurrentMonth
                           ? "text-gray-300"
                           : d.isToday
-                          ? "text-white bg-blue-500 rounded-full w-6 h-6 flex items-center justify-center text-[11px] font-bold"
+                          ? "text-white bg-blue-500 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
                           : d.dayOfWeek === 0 || d.holiday
-                          ? "text-rose-500"
+                          ? "text-red-500"
                           : d.dayOfWeek === 6
                           ? "text-blue-500"
                           : "text-gray-700"
@@ -152,9 +149,9 @@ export function CalendarView({
                   {d.holiday && d.isCurrentMonth && (
                     <div className="mb-0.5">
                       <span
-                        className={`text-[9px] font-bold px-1 py-0.5 rounded block truncate ${
+                        className={`text-xs font-semibold px-1 py-0.5 rounded block truncate ${
                           d.holiday.type === "substitute"
-                            ? "bg-orange-50 text-orange-600"
+                            ? "bg-amber-50 text-amber-600"
                             : "bg-red-50 text-red-600"
                         }`}
                       >
@@ -171,7 +168,7 @@ export function CalendarView({
                       return (
                         <div
                           key={ri}
-                          className={`text-[9px] font-medium px-1 py-0.5 rounded mb-0.5 truncate ${
+                          className={`text-xs font-medium px-1 py-0.5 rounded mb-0.5 truncate ${
                             req.status === "approved"
                               ? "bg-blue-50 text-blue-700"
                               : "bg-amber-50 text-amber-700"
@@ -182,7 +179,7 @@ export function CalendarView({
                       );
                     })}
                   {d.isCurrentMonth && dayLeaves.length > 2 && (
-                    <span className="text-[9px] text-gray-400 pl-1">
+                    <span className="text-xs text-gray-400 pl-1">
                       +{dayLeaves.length - 2}명
                     </span>
                   )}
@@ -195,9 +192,9 @@ export function CalendarView({
 
       {/* 이번 달 공휴일 목록 */}
       {monthHolidays.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 pt-4 pb-3">
-            <h3 className="text-[13px] font-bold text-gray-900">
+            <h3 className="text-sm font-bold text-gray-900">
               {month + 1}월 공휴일
             </h3>
           </div>
@@ -213,33 +210,33 @@ export function CalendarView({
                   <div
                     className={`w-10 text-center py-1.5 rounded-lg ${
                       h.type === "substitute"
-                        ? "bg-orange-50 border border-orange-200"
+                        ? "bg-amber-50 border border-amber-200"
                         : "bg-red-50 border border-red-200"
                     }`}
                   >
                     <p
-                      className={`text-[14px] font-bold leading-none ${
-                        h.type === "substitute" ? "text-orange-600" : "text-red-600"
+                      className={`text-sm font-bold leading-none ${
+                        h.type === "substitute" ? "text-amber-600" : "text-red-600"
                       }`}
                     >
                       {d.getDate()}
                     </p>
                     <p
-                      className={`text-[9px] font-medium mt-0.5 ${
-                        h.type === "substitute" ? "text-orange-400" : "text-red-400"
+                      className={`text-xs font-medium mt-0.5 ${
+                        h.type === "substitute" ? "text-amber-400" : "text-red-400"
                       }`}
                     >
                       {dayName}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[13px] font-semibold text-gray-800">
+                    <p className="text-sm font-semibold text-gray-800">
                       {h.name}
                     </p>
-                    <p className="text-[11px] text-gray-400">
+                    <p className="text-xs text-gray-400">
                       {h.date} ({dayName}요일)
                       {h.type === "substitute" && (
-                        <span className="ml-1 text-orange-500">대체공휴일</span>
+                        <span className="ml-1 text-amber-500">대체공휴일</span>
                       )}
                     </p>
                   </div>

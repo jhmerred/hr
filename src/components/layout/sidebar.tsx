@@ -13,6 +13,7 @@ import {
   Network,
   ChevronRight,
   Calendar,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -48,22 +49,26 @@ const navGroups = [
   },
 ];
 
-export function Sidebar() {
+export function Sidebar({
+  userName,
+  userEmail,
+}: {
+  userName: string;
+  userEmail: string;
+}) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-[240px] bg-white border-r border-gray-100 flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-full w-[240px] bg-white border-r border-gray-200 flex flex-col z-40">
       {/* Logo */}
-      <div className="h-[60px] flex items-center px-5 border-b border-gray-100">
-        <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200 group-hover:shadow-lg group-hover:shadow-blue-300 transition-shadow">
+      <div className="h-[60px] flex items-center px-5 border-b border-gray-200">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
             <span className="text-white font-bold text-sm">H</span>
           </div>
-          <div>
-            <span className="text-[15px] font-bold tracking-tight text-gray-900">
-              HR Manager
-            </span>
-          </div>
+          <span className="text-sm font-bold tracking-tight text-gray-900">
+            HR Manager
+          </span>
         </Link>
       </div>
 
@@ -72,7 +77,7 @@ export function Sidebar() {
         {navGroups.map((group, gi) => (
           <div key={gi} className={cn("mb-1", group.label && "mt-5")}>
             {group.label && (
-              <p className="px-3 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-[0.08em]">
+              <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 {group.label}
               </p>
             )}
@@ -85,20 +90,20 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "group flex items-center gap-2.5 px-3 py-[9px] rounded-xl text-[13px] font-medium transition-all duration-200",
+                    "group flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm"
-                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   )}
                 >
                   <item.icon
                     className={cn(
-                      "h-[18px] w-[18px] transition-colors",
+                      "h-4 w-4 transition-colors",
                       isActive
                         ? "text-blue-600"
                         : "text-gray-400 group-hover:text-gray-600"
                     )}
-                    strokeWidth={isActive ? 2.2 : 1.8}
+                    strokeWidth={isActive ? 2 : 1.8}
                   />
                   <span className="flex-1">{item.label}</span>
                   {isActive && (
@@ -111,20 +116,27 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-gray-100">
+      {/* Footer - User Info */}
+      <div className="px-4 py-3 border-t border-gray-200">
         <div className="flex items-center gap-2.5 px-1">
-          <div className="w-7 h-7 rounded-full avatar-purple flex items-center justify-center text-[11px] font-bold">
-            A
+          <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+            {userName.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-semibold text-gray-700 truncate">
-              Admin
+            <p className="text-xs font-semibold text-gray-700 truncate">
+              {userName}
             </p>
-            <p className="text-[10px] text-gray-400 truncate">
-              HR Manager v2.0
+            <p className="text-xs text-gray-400 truncate">
+              {userEmail || "HR Manager"}
             </p>
           </div>
+          <a
+            href="/api/auth/logout"
+            className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            title="로그아웃"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </a>
         </div>
       </div>
     </aside>

@@ -19,10 +19,10 @@ export default async function AttendancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+        <h1 className="text-xl font-bold text-gray-900">
           근태 현황
         </h1>
-        <p className="text-[13px] text-gray-400 mt-1">
+        <p className="text-sm text-gray-500 mt-1">
           직원별 출퇴근 기록과 근무시간을 확인합니다
         </p>
       </div>

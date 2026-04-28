@@ -7,21 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Search } from "lucide-react";
 import Link from "next/link";
 import { deleteEmployeeAction } from "@/app/actions";
-
-const statusMap: Record<string, { label: string; cls: string }> = {
-  active: { label: "재직", cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-  inactive: { label: "퇴직", cls: "text-gray-500 bg-gray-50 border-gray-200" },
-  on_leave: { label: "휴직", cls: "text-amber-700 bg-amber-50 border-amber-200" },
-};
-
-const avatarColors = [
-  "avatar-blue", "avatar-purple", "avatar-green", "avatar-amber", "avatar-rose", "avatar-cyan",
-];
-function getAvatarColor(name: string) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return avatarColors[Math.abs(hash) % avatarColors.length];
-}
+import { EMPLOYEE_STATUS_STYLES, getInitial } from "@/lib/constants";
 
 export function EmployeeTable({
   employees,
@@ -53,13 +39,13 @@ export function EmployeeTable({
             placeholder="이름 또는 이메일 검색..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-white border-gray-200 rounded-xl h-10 text-[13px]"
+            className="pl-9 bg-white border-gray-200 rounded-lg h-10 text-sm"
           />
         </div>
         <select
           value={deptFilter}
           onChange={(e) => setDeptFilter(e.target.value)}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-[13px] bg-white text-gray-700 h-10"
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-700 h-10"
         >
           <option value="">전체 부서</option>
           {departments.map((d) => (
@@ -70,10 +56,10 @@ export function EmployeeTable({
         </select>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+            <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-200">
               <th className="text-left py-3 px-5">직원</th>
               <th className="text-left py-3 px-4">부서</th>
               <th className="text-left py-3 px-4">직책</th>
@@ -87,51 +73,49 @@ export function EmployeeTable({
               <tr>
                 <td
                   colSpan={6}
-                  className="text-center text-[13px] text-gray-400 py-16"
+                  className="text-center text-sm text-gray-400 py-16"
                 >
                   직원이 없습니다
                 </td>
               </tr>
             ) : (
               filtered.map((emp) => {
-                const status = statusMap[emp.status] || statusMap.active;
+                const status = EMPLOYEE_STATUS_STYLES[emp.status] || EMPLOYEE_STATUS_STYLES.active;
                 return (
                   <tr
                     key={emp.id}
-                    className="border-b border-gray-50 last:border-0 table-row-hover group"
+                    className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors group"
                   >
                     <td className="py-3 px-5">
                       <Link
                         href={`/employees/${emp.id}`}
                         className="flex items-center gap-3"
                       >
-                        <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold ${getAvatarColor(emp.name)}`}
-                        >
-                          {emp.name.charAt(0)}
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+                          {getInitial(emp.name)}
                         </div>
                         <div>
-                          <p className="text-[13px] font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                          <p className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
                             {emp.name}
                           </p>
-                          <p className="text-[11px] text-gray-400">
+                          <p className="text-xs text-gray-400">
                             {emp.email}
                           </p>
                         </div>
                       </Link>
                     </td>
-                    <td className="py-3 px-4 text-[12px] text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600">
                       {deptMap.get(emp.department_id) || "-"}
                     </td>
-                    <td className="py-3 px-4 text-[12px] text-gray-600">
+                    <td className="py-3 px-4 text-xs text-gray-600">
                       {emp.position}
                     </td>
-                    <td className="py-3 px-4 text-[12px] text-gray-500">
+                    <td className="py-3 px-4 text-xs text-gray-500">
                       {emp.hire_date}
                     </td>
                     <td className="py-3 px-4">
                       <span
-                        className={`text-[11px] px-2 py-[3px] rounded-md border font-semibold ${status.cls}`}
+                        className={`text-xs px-2 py-0.5 rounded border font-semibold ${status.cls}`}
                       >
                         {status.label}
                       </span>

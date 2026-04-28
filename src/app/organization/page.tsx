@@ -2,23 +2,7 @@ import { getEmployees, getDepartments } from "@/lib/api";
 import { Employee, Department } from "@/lib/types";
 import { Building2, Users } from "lucide-react";
 import Link from "next/link";
-
-const avatarColors = [
-  "avatar-blue", "avatar-purple", "avatar-green", "avatar-amber", "avatar-rose", "avatar-cyan",
-];
-function getAvatarColor(name: string) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return avatarColors[Math.abs(hash) % avatarColors.length];
-}
-
-const deptColors = [
-  { bg: "from-blue-500 to-indigo-600", light: "bg-blue-50", text: "text-blue-700", border: "border-blue-100" },
-  { bg: "from-violet-500 to-purple-600", light: "bg-violet-50", text: "text-violet-700", border: "border-violet-100" },
-  { bg: "from-emerald-500 to-teal-600", light: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100" },
-  { bg: "from-amber-400 to-orange-500", light: "bg-amber-50", text: "text-amber-700", border: "border-amber-100" },
-  { bg: "from-rose-500 to-pink-600", light: "bg-rose-50", text: "text-rose-700", border: "border-rose-100" },
-];
+import { getInitial } from "@/lib/constants";
 
 export default async function OrganizationPage() {
   const [employeesData, departmentsData] = await Promise.all([
@@ -29,9 +13,8 @@ export default async function OrganizationPage() {
   const employees: Employee[] = employeesData.rows || [];
   const departments: Department[] = departmentsData.rows || [];
 
-  const deptGroups = departments.map((dept, i) => ({
+  const deptGroups = departments.map((dept) => ({
     ...dept,
-    color: deptColors[i % deptColors.length],
     members: employees
       .filter((e) => e.department_id === dept.id)
       .sort((a, b) => {
@@ -41,51 +24,51 @@ export default async function OrganizationPage() {
   }));
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">조직도</h1>
-        <p className="text-[13px] text-gray-400 mt-1">
+        <h1 className="text-xl font-bold text-gray-900">조직도</h1>
+        <p className="text-sm text-gray-500 mt-1">
           {departments.length}개 부서 &middot; {employees.length}명
         </p>
       </div>
 
       {/* 회사 루트 */}
       <div className="flex flex-col items-center">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl px-8 py-4 shadow-xl shadow-blue-200">
+        <div className="bg-white border border-gray-200 rounded-lg px-8 py-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <Building2 className="h-5 w-5" />
+            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-gray-500" />
             </div>
             <div>
-              <p className="font-bold text-[15px]">우리 회사</p>
-              <p className="text-[12px] text-blue-200">
+              <p className="font-bold text-sm text-gray-900">우리 회사</p>
+              <p className="text-xs text-gray-500">
                 {employees.length}명 &middot; {departments.length}개 부서
               </p>
             </div>
           </div>
         </div>
-        <div className="w-px h-8 bg-gradient-to-b from-blue-300 to-gray-200" />
+        <div className="w-px h-8 bg-gray-200" />
         <div className="w-[80%] max-w-[800px] h-px bg-gray-200" />
       </div>
 
       {/* 부서 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {deptGroups.map((dept) => (
           <div
             key={dept.id}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
           >
             {/* 부서 헤더 */}
-            <div className={`bg-gradient-to-r ${dept.color.bg} p-4`}>
+            <div className="bg-gray-50 border-b border-gray-200 p-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                  <Users className="h-4 w-4 text-white" />
+                <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+                  <Users className="h-4 w-4 text-gray-500" />
                 </div>
                 <div>
-                  <p className="font-bold text-[14px] text-white">
+                  <p className="font-bold text-sm text-gray-900">
                     {dept.name}
                   </p>
-                  <p className="text-[11px] text-white/70">
+                  <p className="text-xs text-gray-500">
                     {dept.members.length}명
                   </p>
                 </div>
@@ -93,9 +76,9 @@ export default async function OrganizationPage() {
             </div>
 
             {/* 멤버 목록 */}
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-gray-100">
               {dept.members.length === 0 ? (
-                <p className="text-[12px] text-gray-400 p-5 text-center">
+                <p className="text-xs text-gray-400 p-5 text-center">
                   구성원이 없습니다
                 </p>
               ) : (
@@ -105,29 +88,23 @@ export default async function OrganizationPage() {
                     <Link
                       key={emp.id}
                       href={`/employees/${emp.id}`}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/80 transition-colors group"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"
                     >
-                      <div
-                        className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold ${
-                          isLeader
-                            ? `bg-gradient-to-br ${dept.color.bg} text-white shadow-sm`
-                            : getAvatarColor(emp.name)
-                        }`}
-                      >
-                        {emp.name.charAt(0)}
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+                        {getInitial(emp.name)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[13px] font-semibold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
+                          <span className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
                             {emp.name}
                           </span>
                           {isLeader && (
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${dept.color.light} ${dept.color.text}`}>
+                            <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
                               LEAD
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-gray-400 truncate">
+                        <p className="text-xs text-gray-400 truncate">
                           {emp.position} &middot; {emp.email}
                         </p>
                       </div>

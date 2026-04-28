@@ -18,22 +18,7 @@ import {
   approveLeaveRequestAction,
   rejectLeaveRequestAction,
 } from "@/app/actions";
-
-const statusConfig: Record<string, { label: string; cls: string }> = {
-  pending: { label: "대기", cls: "text-amber-700 bg-amber-50 border-amber-200" },
-  approved: { label: "승인", cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-  rejected: { label: "반려", cls: "text-rose-700 bg-rose-50 border-rose-200" },
-  cancelled: { label: "취소", cls: "text-gray-500 bg-gray-50 border-gray-200" },
-};
-
-const avatarColors = [
-  "avatar-blue", "avatar-purple", "avatar-green", "avatar-amber", "avatar-rose", "avatar-cyan",
-];
-function getAvatarColor(name: string) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return avatarColors[Math.abs(hash) % avatarColors.length];
-}
+import { LEAVE_STATUS_STYLES, getInitial } from "@/lib/constants";
 
 export function LeaveRequestList({
   requests,
@@ -53,10 +38,10 @@ export function LeaveRequestList({
     status ? requests.filter((r) => r.status === status) : requests;
 
   const renderTable = (items: LeaveRequest[]) => (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
       <table className="w-full">
         <thead>
-          <tr className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+          <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-200">
             <th className="text-left py-3 px-5">직원</th>
             <th className="text-left py-3 px-4">유형</th>
             <th className="text-left py-3 px-4">기간</th>
@@ -69,7 +54,7 @@ export function LeaveRequestList({
         <tbody>
           {items.length === 0 ? (
             <tr>
-              <td colSpan={7} className="text-center text-[13px] text-gray-400 py-16">
+              <td colSpan={7} className="text-center text-sm text-gray-400 py-16">
                 해당하는 휴가 신청이 없습니다
               </td>
             </tr>
@@ -77,34 +62,34 @@ export function LeaveRequestList({
             items.map((req) => {
               const emp = empMap.get(req.employee_id);
               const empName = emp?.name || "-";
-              const status = statusConfig[req.status] || statusConfig.pending;
+              const status = LEAVE_STATUS_STYLES[req.status] || LEAVE_STATUS_STYLES.pending;
               return (
-                <tr key={req.id} className="border-b border-gray-50 last:border-0 table-row-hover group">
+                <tr key={req.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors group">
                   <td className="py-3 px-5">
                     <div className="flex items-center gap-2.5">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold ${getAvatarColor(empName)}`}>
-                        {empName.charAt(0)}
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+                        {getInitial(empName)}
                       </div>
                       <div>
-                        <p className="text-[12px] font-semibold text-gray-800">{empName}</p>
-                        <p className="text-[10px] text-gray-400">{emp?.position}</p>
+                        <p className="text-xs font-semibold text-gray-800">{empName}</p>
+                        <p className="text-xs text-gray-400">{emp?.position}</p>
                       </div>
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-[11px] font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-[2px] rounded-md">
+                    <span className="text-xs font-medium text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
                       {ltMap.get(req.leave_type_id) || "-"}
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <Link href={`/leave/${req.id}`} className="text-[12px] text-gray-700 hover:text-blue-600">
+                    <Link href={`/leave/${req.id}`} className="text-xs text-gray-700 hover:text-blue-600">
                       {req.start_date} ~ {req.end_date}
                     </Link>
                   </td>
-                  <td className="py-3 px-4 text-[12px] font-semibold text-gray-800">{req.days}일</td>
-                  <td className="py-3 px-4 text-[11px] text-gray-500 max-w-[180px] truncate">{req.reason}</td>
+                  <td className="py-3 px-4 text-xs font-semibold text-gray-800">{req.days}일</td>
+                  <td className="py-3 px-4 text-xs text-gray-500 max-w-[180px] truncate">{req.reason}</td>
                   <td className="py-3 px-4">
-                    <span className={`text-[10px] px-2 py-[3px] rounded-md border font-semibold ${status.cls}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded border font-semibold ${status.cls}`}>
                       {status.label}
                     </span>
                   </td>
@@ -112,20 +97,20 @@ export function LeaveRequestList({
                     {req.status === "pending" && (
                       <div className="flex justify-end gap-1">
                         <button
-                          className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center hover:bg-emerald-100 transition-colors"
+                          className="w-7 h-7 rounded-lg bg-green-50 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors"
                           onClick={async () => {
                             if (confirm("승인하시겠습니까?")) {
                               await approveLeaveRequestAction(req.id);
                             }
                           }}
                         >
-                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          <Check className="h-3.5 w-3.5 text-green-600" />
                         </button>
                         <button
-                          className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center hover:bg-rose-100 transition-colors"
+                          className="w-7 h-7 rounded-lg bg-red-50 border border-red-200 flex items-center justify-center hover:bg-red-100 transition-colors"
                           onClick={() => setRejectId(req.id)}
                         >
-                          <X className="h-3.5 w-3.5 text-rose-600" />
+                          <X className="h-3.5 w-3.5 text-red-600" />
                         </button>
                       </div>
                     )}
@@ -142,7 +127,7 @@ export function LeaveRequestList({
   return (
     <>
       <Tabs defaultValue="pending">
-        <TabsList className="bg-white border border-gray-200 rounded-xl p-1 h-auto">
+        <TabsList className="bg-white border border-gray-200 rounded-lg p-1 h-auto">
           {[
             { value: "pending", label: "대기", count: byStatus("pending").length },
             { value: "approved", label: "승인", count: byStatus("approved").length },
@@ -152,10 +137,10 @@ export function LeaveRequestList({
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="text-[12px] font-medium rounded-lg px-4 py-1.5 data-[state=active]:bg-gray-900 data-[state=active]:text-white"
+              className="text-xs font-medium rounded-md px-4 py-1.5 data-[state=active]:bg-gray-900 data-[state=active]:text-white"
             >
               {tab.label}
-              <span className="ml-1.5 text-[10px] opacity-60">{tab.count}</span>
+              <span className="ml-1.5 text-xs opacity-60">{tab.count}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -188,7 +173,7 @@ export function LeaveRequestList({
             className="space-y-4"
           >
             <div>
-              <Label htmlFor="reject_reason" className="text-[13px]">반려 사유</Label>
+              <Label htmlFor="reject_reason" className="text-sm">반려 사유</Label>
               <Textarea
                 id="reject_reason"
                 name="reject_reason"
@@ -197,7 +182,7 @@ export function LeaveRequestList({
                 className="mt-1.5"
               />
             </div>
-            <Button type="submit" variant="destructive" className="w-full rounded-xl">
+            <Button type="submit" variant="destructive" className="w-full rounded-lg">
               반려
             </Button>
           </form>

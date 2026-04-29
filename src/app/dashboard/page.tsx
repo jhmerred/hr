@@ -381,7 +381,7 @@ export default async function DashboardPage() {
                   (a: { date: string }, b: { date: string }) =>
                     b.date.localeCompare(a.date)
                 )
-                .slice(0, 10)
+                .slice(0, 5)
                 .map(
                   (a: {
                     id: string;

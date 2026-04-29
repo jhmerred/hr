@@ -19,7 +19,7 @@ export const ATTENDANCE_STATUS_STYLES: Record<string, { label: string; cls: stri
   late: { label: "지각", cls: "text-amber-700 bg-amber-50 border-amber-200" },
   early_leave: { label: "조퇴", cls: "text-amber-700 bg-amber-50 border-amber-200" },
   overtime: { label: "초과근무", cls: "text-red-700 bg-red-50 border-red-200" },
-  leave: { label: "휴가", cls: "text-blue-700 bg-blue-50 border-blue-200" },
+  leave: { label: "휴가", cls: "text-gray-600 bg-gray-100 border-gray-200" },
   absent: { label: "결근", cls: "text-gray-600 bg-gray-100 border-gray-200" },
 };
 

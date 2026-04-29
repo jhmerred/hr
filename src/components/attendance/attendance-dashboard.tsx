@@ -16,6 +16,8 @@ export function AttendanceDashboard({
 }) {
   const [deptFilter, setDeptFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const PAGE_SIZE = 10;
 
   const empMap = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
   const deptMap = useMemo(() => new Map(departments.map((d) => [d.id, d.name])), [departments]);
@@ -138,6 +140,7 @@ export function AttendanceDashboard({
               ) : (
                 filtered
                   .sort((a, b) => b.date.localeCompare(a.date))
+                  .slice(0, showAll ? undefined : PAGE_SIZE)
                   .map((r) => {
                     const emp = empMap.get(r.employee_id);
                     const empName = emp?.name || "-";
@@ -178,6 +181,16 @@ export function AttendanceDashboard({
               )}
             </tbody>
           </table>
+          {!showAll && filtered.length > PAGE_SIZE && (
+            <div className="border-t border-gray-100 pt-3 mt-1">
+              <button
+                onClick={() => setShowAll(true)}
+                className="w-full text-center text-xs font-medium text-gray-500 hover:text-gray-900 py-2"
+              >
+                {filtered.length - PAGE_SIZE}건 더 보기
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

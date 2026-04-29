@@ -53,9 +53,9 @@ export async function getAuthUser(): Promise<AuthUser> {
     }
   }
 
-  // 매칭 안 되면 첫 번째 admin을 fallback (데모용)
+  // 매칭 안 되면 admin으로 fallback (데모용)
   // 실제 운영 시 제거
-  if (!employeeId && email) {
+  if (!employeeId) {
     role = "admin";
   }
 

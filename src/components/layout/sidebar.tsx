@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Calendar,
   LogOut,
+  UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type LucideIcon } from "lucide-react";
@@ -23,6 +24,7 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   adminOnly?: boolean;
+  memberOnly?: boolean;
 }
 
 const navGroups: { label: string | null; items: NavItem[] }[] = [
@@ -35,6 +37,7 @@ const navGroups: { label: string | null; items: NavItem[] }[] = [
   {
     label: "구성원",
     items: [
+      { href: "/profile", label: "내 프로필", icon: UserCircle, memberOnly: true },
       { href: "/employees", label: "직원 관리", icon: Users, adminOnly: true },
       { href: "/departments", label: "부서 관리", icon: Building2, adminOnly: true },
       { href: "/organization", label: "조직도", icon: Network, adminOnly: true },
@@ -85,9 +88,11 @@ export function Sidebar({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
         {navGroups.map((group, gi) => {
-          const visibleItems = group.items.filter(
-            (item) => !item.adminOnly || userRole === "admin"
-          );
+          const visibleItems = group.items.filter((item) => {
+            if (item.adminOnly && userRole !== "admin") return false;
+            if (item.memberOnly && userRole !== "member") return false;
+            return true;
+          });
           if (visibleItems.length === 0) return null;
 
           return (

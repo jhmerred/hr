@@ -19,14 +19,20 @@ import { formatLocalDate } from "@/lib/holidays";
 import { getInitial, ATTENDANCE_STATUS_STYLES } from "@/lib/constants";
 import { safeParallel } from "@/lib/safe-fetch";
 import { ErrorState } from "@/components/error-state";
+import { getAuthUser } from "@/lib/auth";
+import { getLeaveTypes } from "@/lib/api";
+import { MemberDashboard } from "@/components/dashboard/member-dashboard";
 
 export default async function DashboardPage() {
+  const user = await getAuthUser();
+
   const result = await safeParallel(
     () => getEmployees(),
     () => getLeaveRequests(),
     () => getDepartments(),
     () => getAttendanceRecords(),
-    () => getLeaveBalances()
+    () => getLeaveBalances(),
+    () => getLeaveTypes(),
   );
 
   if (!result.ok) {
@@ -34,7 +40,7 @@ export default async function DashboardPage() {
     return <ErrorState />;
   }
 
-  const [employeesData, requestsData, departmentsData, attendanceData, balancesData] =
+  const [employeesData, requestsData, departmentsData, attendanceData, balancesData, leaveTypesData] =
     result.results;
 
   const employees = employeesData.rows || [];
@@ -42,6 +48,32 @@ export default async function DashboardPage() {
   const departments = departmentsData.rows || [];
   const attendance = attendanceData.rows || [];
   const balances = balancesData.rows || [];
+  const leaveTypes = leaveTypesData.rows || [];
+
+  // Member 대시보드
+  if (user.role === "member" && user.employeeId) {
+    const myEmployee = employees.find((e: { id: string }) => e.id === user.employeeId);
+    const myBalances = balances.filter((b: { employee_id: string }) => b.employee_id === user.employeeId);
+    const myRequests = requests
+      .filter((r: { employee_id: string }) => r.employee_id === user.employeeId)
+      .sort((a: { created_at: string }, b: { created_at: string }) => b.created_at.localeCompare(a.created_at));
+    const today = formatLocalDate(new Date());
+    const myTodayRecord = attendance.find(
+      (a: { employee_id: string; date: string }) => a.employee_id === user.employeeId && a.date === today
+    ) || null;
+
+    if (myEmployee) {
+      return (
+        <MemberDashboard
+          employee={myEmployee}
+          balances={myBalances}
+          requests={myRequests}
+          todayRecord={myTodayRecord}
+          leaveTypes={leaveTypes}
+        />
+      );
+    }
+  }
 
   const activeEmployees = employees.filter(
     (e: { status: string }) => e.status === "active"

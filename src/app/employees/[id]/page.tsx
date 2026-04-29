@@ -8,6 +8,7 @@ import {
 import { Department, LeaveBalance, LeaveRequest, LeaveType } from "@/lib/types";
 import { EmployeeForm } from "@/components/employees/employee-form";
 import { ArrowLeft } from "lucide-react";
+import { getAuthUser, requireAdmin } from "@/lib/auth";
 import Link from "next/link";
 import { LEAVE_STATUS_STYLES } from "@/lib/constants";
 import { redirect } from "next/navigation";
@@ -20,6 +21,8 @@ export default async function EmployeeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const user = await getAuthUser();
+  requireAdmin(user);
 
   const result = await safeParallel(
     () => getEmployee(id),
@@ -59,7 +62,7 @@ export default async function EmployeeDetailPage({
         </div>
       </div>
 
-      <EmployeeForm departments={departments} employee={employee} />
+      <EmployeeForm departments={departments} employee={employee} isAdmin={user.role === "admin"} />
 
       {/* 잔여 휴가 */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">

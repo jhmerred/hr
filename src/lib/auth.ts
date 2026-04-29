@@ -53,8 +53,9 @@ export async function getAuthUser(): Promise<AuthUser> {
     }
   }
 
-  // 매칭 안 되면 admin으로 fallback (데모용)
-  // 실제 운영 시 제거
+  // SSO 이메일이 직원 테이블과 매칭되지 않으면:
+  // - apphub SSO 사용자는 기본 admin (조직 관리자)
+  // - 직원 등록 후 해당 이메일로 매칭되면 role에 따라 분기
   if (!employeeId) {
     role = "admin";
   }

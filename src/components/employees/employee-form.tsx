@@ -55,9 +55,11 @@ const selectCls =
 export function EmployeeForm({
   departments,
   employee,
+  isAdmin = false,
 }: {
   departments: Department[];
   employee?: Employee;
+  isAdmin?: boolean;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -227,6 +229,37 @@ export function EmployeeForm({
                       >
                         {style.label}
                       </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </FormField>
+          )}
+
+          {isEdit && isAdmin && (
+            <FormField icon={Shield} label="권한" description="관리자는 모든 직원/부서/휴가를 관리할 수 있습니다">
+              <div className="flex gap-2">
+                {([
+                  { value: "member", label: "직원", desc: "본인 정보만 접근" },
+                  { value: "admin", label: "관리자", desc: "전체 관리 권한" },
+                ] as const).map((opt) => (
+                  <label key={opt.value} className="flex-1">
+                    <input
+                      type="radio"
+                      name="role"
+                      value={opt.value}
+                      defaultChecked={employee.role === opt.value}
+                      className="peer sr-only"
+                    />
+                    <div
+                      className={`text-center px-3 py-3 rounded-lg border cursor-pointer transition-all peer-checked:ring-2 peer-checked:ring-gray-900 peer-checked:border-gray-900 hover:border-gray-300 ${
+                        employee.role === opt.value
+                          ? "border-gray-900"
+                          : "border-gray-200"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-gray-800">{opt.label}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{opt.desc}</p>
                     </div>
                   </label>
                 ))}

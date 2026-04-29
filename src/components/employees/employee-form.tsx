@@ -216,9 +216,9 @@ export function EmployeeForm({
                       className="peer sr-only"
                     />
                     <div
-                      className={`text-center px-3 py-3 rounded-lg border cursor-pointer transition-all peer-checked:ring-2 peer-checked:ring-blue-400 peer-checked:border-blue-400 hover:border-gray-300 ${
+                      className={`text-center px-3 py-3 rounded-lg border cursor-pointer transition-all peer-checked:ring-2 peer-checked:ring-gray-900 peer-checked:border-gray-900 hover:border-gray-300 ${
                         employee.status === value
-                          ? "border-blue-400"
+                          ? "border-gray-900"
                           : "border-gray-200"
                       }`}
                     >

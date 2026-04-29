@@ -105,7 +105,7 @@ export function LeaveRequestList({
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <Link href={`/leave/${req.id}`} className="text-xs text-gray-700 hover:text-blue-600">
+                    <Link href={`/leave/${req.id}`} className="text-xs text-gray-700 hover:text-gray-900">
                       {req.start_date} ~ {req.end_date}
                     </Link>
                   </td>

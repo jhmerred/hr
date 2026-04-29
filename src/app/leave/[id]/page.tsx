@@ -68,7 +68,7 @@ export default async function LeaveRequestDetailPage({
               <p className="text-xs text-gray-400 mb-1">직원</p>
               <Link
                 href={`/employees/${request.employee_id}`}
-                className="text-sm font-semibold text-blue-600 hover:underline"
+                className="text-sm font-semibold text-gray-600 hover:text-gray-900 hover:underline"
               >
                 {empName}
               </Link>

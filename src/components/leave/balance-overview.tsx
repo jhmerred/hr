@@ -178,7 +178,7 @@ export function BalanceOverview({
                           <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${
-                                pct >= 80 ? "bg-red-500" : pct >= 50 ? "bg-amber-400" : "bg-blue-500"
+                                pct >= 80 ? "bg-red-500" : pct >= 50 ? "bg-amber-400" : "bg-gray-700"
                               }`}
                               style={{ width: `${Math.min(pct, 100)}%` }}
                             />

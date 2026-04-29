@@ -72,7 +72,7 @@ export default async function EmployeeDetailPage({
           {currentBalances.length === 0 ? (
             <p className="text-sm text-gray-400 py-4 text-center">
               잔여 휴가 데이터가 없습니다.{" "}
-              <Link href="/balances" className="text-blue-600 hover:underline">
+              <Link href="/balances" className="text-gray-600 hover:text-gray-900 hover:underline">
                 잔여 휴가 페이지
               </Link>
               에서 초기화해 주세요.
@@ -127,7 +127,7 @@ export default async function EmployeeDetailPage({
                               <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                 <div
                                   className={`h-full rounded-full ${
-                                    pct >= 80 ? "bg-red-500" : pct >= 50 ? "bg-amber-400" : "bg-blue-500"
+                                    pct >= 80 ? "bg-red-500" : pct >= 50 ? "bg-amber-400" : "bg-gray-700"
                                   }`}
                                   style={{ width: `${Math.min(pct, 100)}%` }}
                                 />
@@ -155,7 +155,7 @@ export default async function EmployeeDetailPage({
           {requests.length === 0 ? (
             <div className="py-10 text-center">
               <p className="text-sm text-gray-400">휴가 신청 기록이 없습니다</p>
-              <Link href="/leave/new" className="text-xs text-blue-600 hover:underline mt-1 inline-block">
+              <Link href="/leave/new" className="text-xs text-gray-600 hover:text-gray-900 hover:underline mt-1 inline-block">
                 휴가 신청하기
               </Link>
             </div>
@@ -189,7 +189,7 @@ export default async function EmployeeDetailPage({
                         <td className="py-2.5">
                           <Link
                             href={`/leave/${r.id}`}
-                            className="text-sm text-blue-600 hover:underline"
+                            className="text-sm text-gray-600 hover:text-gray-900 hover:underline"
                           >
                             {r.start_date} ~ {r.end_date}
                           </Link>

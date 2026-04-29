@@ -418,7 +418,7 @@ export function LeaveRequestForm({
                   i === 0
                     ? "text-red-400"
                     : i === 6
-                    ? "text-blue-400"
+                    ? "text-gray-400"
                     : "text-gray-400"
                 }`}
               >
@@ -514,7 +514,7 @@ export function LeaveRequestForm({
               {excludedInfo.weekends > 0 && (
                 <div className="flex justify-between text-gray-500">
                   <span>주말 제외</span>
-                  <span className="text-blue-500 font-medium">
+                  <span className="text-gray-500 font-medium">
                     -{excludedInfo.weekends}일
                   </span>
                 </div>

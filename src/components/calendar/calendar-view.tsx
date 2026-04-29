@@ -22,7 +22,8 @@ export function CalendarView({
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const [selectedDate, setSelectedDate] = useState<string | null>(todayStr);
 
   const empMap = new Map(employees.map((e) => [e.id, e]));
   const ltMap = new Map(leaveTypes.map((lt) => [lt.id, lt.name]));

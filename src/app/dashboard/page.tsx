@@ -307,7 +307,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                      className="h-full rounded-full bg-gray-700 transition-all duration-500"
                       style={{
                         width: `${(dept.count / maxDeptCount) * 100}%`,
                       }}

@@ -115,7 +115,7 @@ export function EmployeeTable({
                   return (
                     <tr
                       key={emp.id}
-                      className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors group"
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors group"
                     >
                       <td className="py-3 px-5">
                         <Link
@@ -126,7 +126,7 @@ export function EmployeeTable({
                             {getInitial(emp.name)}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                            <p className="text-sm font-semibold text-gray-900 group-hover:text-gray-900 transition-colors truncate">
                               {emp.name}
                             </p>
                             <p className="text-xs text-gray-400 truncate">

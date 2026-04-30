@@ -48,6 +48,7 @@ export async function deleteDepartmentAction(id: string) {
 // Employees
 export async function createEmployeeAction(formData: FormData) {
   await assertAdmin();
+  const role = (formData.get("role") as string) || "member";
   await api.createEmployee({
     name: formData.get("name") as string,
     email: formData.get("email") as string,
@@ -56,7 +57,7 @@ export async function createEmployeeAction(formData: FormData) {
     hire_date: formData.get("hire_date") as string,
     department_id: formData.get("department_id") as string,
     status: "active",
-    role: "member",
+    role: role === "admin" ? "admin" : "member",
   });
   revalidatePath("/employees");
 }

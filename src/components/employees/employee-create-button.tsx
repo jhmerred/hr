@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, User, Mail, Phone, Briefcase, Calendar, Building2, Save, X } from "lucide-react";
+import { Plus, User, Mail, Phone, Briefcase, Calendar, Building2, Save, Shield } from "lucide-react";
 import { createEmployeeAction } from "@/app/actions";
 import { useToast } from "@/components/toast";
 
@@ -119,6 +119,33 @@ export function EmployeeCreateButton({ departments }: { departments: Department[
                     </svg>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-1 text-xs font-semibold text-gray-600 mb-1.5">
+                <Shield className="h-3 w-3 text-gray-400" />
+                권한
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { value: "member", label: "직원", desc: "본인 정보만 접근" },
+                  { value: "admin", label: "관리자", desc: "전체 관리 권한" },
+                ] as const).map((opt) => (
+                  <label key={opt.value} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="role"
+                      value={opt.value}
+                      defaultChecked={opt.value === "member"}
+                      className="peer sr-only"
+                    />
+                    <div className="text-center px-3 py-2.5 rounded-lg border border-gray-200 transition-all peer-checked:ring-2 peer-checked:ring-gray-900 peer-checked:border-gray-900 hover:border-gray-300">
+                      <p className="text-sm font-semibold text-gray-800">{opt.label}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{opt.desc}</p>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
 

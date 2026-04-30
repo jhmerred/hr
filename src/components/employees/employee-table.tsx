@@ -104,6 +104,7 @@ export function EmployeeTable({
                   <th className="text-left py-3 px-4">부서</th>
                   <th className="text-left py-3 px-4">직책</th>
                   <th className="text-left py-3 px-4">입사일</th>
+                  <th className="text-left py-3 px-4">권한</th>
                   <th className="text-left py-3 px-4">상태</th>
                   <th className="w-20"></th>
                 </tr>
@@ -145,6 +146,17 @@ export function EmployeeTable({
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-500 font-mono text-xs">
                         {emp.hire_date}
+                      </td>
+                      <td className="py-3 px-4">
+                        {emp.role === "admin" ? (
+                          <span className="text-xs px-2 py-0.5 rounded border font-semibold bg-gray-900 text-white border-gray-900">
+                            관리자
+                          </span>
+                        ) : (
+                          <span className="text-xs px-2 py-0.5 rounded border font-medium text-gray-500 bg-gray-50 border-gray-200">
+                            직원
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         <span className={`text-xs px-2 py-0.5 rounded border font-semibold ${status.cls}`}>

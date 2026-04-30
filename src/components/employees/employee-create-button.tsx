@@ -58,7 +58,7 @@ export function EmployeeCreateButton({ departments }: { departments: Department[
             className="space-y-5 pt-3"
           >
             {/* 기본 정보 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-1 text-xs font-semibold text-gray-600 mb-1.5">
                   <User className="h-3 w-3 text-gray-400" />
@@ -71,11 +71,12 @@ export function EmployeeCreateButton({ departments }: { departments: Department[
                   <Mail className="h-3 w-3 text-gray-400" />
                   이메일 <span className="text-red-400">*</span>
                 </label>
-                <input name="email" type="email" required placeholder="gildong@company.com" className={inputCls} />
+                <input name="email" type="email" required placeholder="hong@example.com" className={inputCls} />
+                <p className="text-xs text-gray-400 mt-1">로그인 SSO 이메일과 동일해야 합니다</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-1 text-xs font-semibold text-gray-600 mb-1.5">
                   <Phone className="h-3 w-3 text-gray-400" />
@@ -92,7 +93,7 @@ export function EmployeeCreateButton({ departments }: { departments: Department[
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="flex items-center gap-1 text-xs font-semibold text-gray-600 mb-1.5">
                   <Calendar className="h-3 w-3 text-gray-400" />

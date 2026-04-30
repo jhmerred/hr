@@ -63,7 +63,7 @@ export default async function LeaveRequestDetailPage({
 
         <div className="px-6 py-5 space-y-5">
           {/* 직원 / 유형 */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <p className="text-xs text-gray-400 mb-1">직원</p>
               <Link

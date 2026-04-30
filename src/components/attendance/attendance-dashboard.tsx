@@ -92,7 +92,7 @@ export function AttendanceDashboard({
 
       {/* Filters + Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+        <div className="flex flex-wrap items-center gap-3 px-5 pt-5 pb-3">
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
